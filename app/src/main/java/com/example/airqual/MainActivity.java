@@ -35,6 +35,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "hello2");
 
     }
+
+
+
+
+
+
     public static void geocodeAddress(String apiKey, String latlng) {
         new AsyncTask<Void, Void, String>() {
             protected String doInBackground(Void... voids) {
