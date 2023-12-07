@@ -28,14 +28,19 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
-        private String apiKey = "AIzaSyCgqT25H7Vqusyow_eiqdBQPBt1Kw5PxA8";
-    //private String address = "Borgarfjordsgatan 12, 164 55 Kista";
-    private String latlng = "59.40704825544182,17.94577779678242";
-    private double latitude = 59.40704825544182;
-    private double longitude = 17.94577779678242;
+
+    private final String KISTA_ADDRESS = "Borgarfjordsgatan 12, 164 55 Kista";
+    private final String KISTA_LOCATION = "59.40704825544182,17.94577779678242";
+
+    private double KISTA_LATITUDE = 59.40704825544182;
+
+    private double KISTA_LONGITUDE = 17.94577779678242;
+    private double WESTBANK_LONGITUDE = 35.32704825544182;
+    private double WESTBANK_LATITUDE = 32.32577779678242;
     private final int FINE_PERMISSION_CODE = 1;
     Location currentLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -44,11 +49,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        String apiKey = getString(R.string.api_key);
 
-        /*fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        getLastLocation();
-        geocodeAddress(apiKey, latlng);*/
-        fetchPollen(apiKey, latitude, longitude);
+        //geocodeAddress(apiKey, KISTA_LOCATION);
+        fetchPollen(apiKey, KISTA_LATITUDE, KISTA_LONGITUDE);
 
     }
 
@@ -143,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
             protected String doInBackground(Void... voids) {
                 try {
                     // Correctly set up the URL for the Geocoding API request
-                    String urlString = "https://pollen.googleapis.com/v1/forecast:lookup?key="+apiKey+"&location.longitude="+lng+"&location.latitude="+lat+"&days=1";
+                    String urlString = "https://pollen.googleapis.com/v1/forecast:lookup?key="+apiKey+"&location.longitude="+lng+"&location.latitude="+lat+"&days=1&plantsDescription=0";
 
                     // Create a URL object
                     URL url = new URL(urlString);
@@ -174,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
                     if (responseCode == 200) {
                         String jsonString = response.toString();
                         parsePollen(jsonString);
-                        JSONObject json = new JSONObject(jsonString);
 
                         Log.d("jsonString", jsonString);
                     } else {
@@ -187,42 +190,90 @@ public class MainActivity extends AppCompatActivity {
             }
 
             public void parsePollen(String pollenInfo) {
-                String jsonResponse = pollenInfo;
+                final String jsonResponse = pollenInfo;
 
                 try {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+                    JSONObject json = new JSONObject(jsonResponse);
 
+                    String regionCode = json.getString("regionCode");           // Region Code / eller i vilket land lat/longituderna är
+                    JSONArray dailyInfoArray = json.getJSONArray("dailyInfo");
+
+                    ///////////////////////////////////////////////////////
+                    // TODO: Göra något med desiredPollenTypes såsmåningom.
                     ArrayList<String> desiredPollenTypes = new ArrayList<>();
                     desiredPollenTypes.add("GRASS");
                     desiredPollenTypes.add("WEED");
+                    ////////////////////////////////////////////////////////
 
-                    String desiredPollenType = "GRASS";  // Replace this with the type of pollen you want to select
+                    for (int i = 0; i < dailyInfoArray.length(); i++) {
+                        JSONObject dailyInfoObject = dailyInfoArray.getJSONObject(i);
 
-                    JsonNode dailyInfoNode = jsonNode.get("dailyInfo");
-                    for (JsonNode dailyInfo : dailyInfoNode) {
-                        JsonNode pollenTypeInfoNode = dailyInfo.get("pollenTypeInfo");
-                        for (JsonNode pollenType : pollenTypeInfoNode) {
-                            String pollenCode = pollenType.get("code").asText();
-                            if (desiredPollenTypes.contains(pollenCode)){
-                                // Found the desired pollen type
-                                String displayName = pollenType.get("displayName").asText();
-                                boolean inSeason = pollenType.get("inSeason").asBoolean();
+                        JSONObject dateObject = dailyInfoObject.getJSONObject("date");      // Dagens datum.
+                        int year = dateObject.getInt("year");                               // 2023
+                        int month = dateObject.getInt("month");                             // 12
+                        int day = dateObject.getInt("day");                                 // 5
 
-                                // Access other attributes as needed
-                                // ...
+                        JSONArray pollenTypeInfoArray = dailyInfoObject.getJSONArray("pollenTypeInfo");
 
-                                System.out.println("Pollen Type: " + displayName);
-                                //System.out.println("In Season: " + inSeason);
-                                Log.d("Pollen Type: ", displayName);
-                                Log.d("In Season: ", ""+inSeason);
+                        /////////
+                        Log.d("Year", year + "");
+                        Log.d("Month", month + "");
+                        Log.d("Day", day + "");
+                        /////////
 
-                                // Print additional attributes
-                                // ...
+                        for (int j = 0; j < pollenTypeInfoArray.length(); j++) {
+                            JSONObject pollenTypeInfoObject = pollenTypeInfoArray.getJSONObject(j);
+                            String pollenTypeCode = pollenTypeInfoObject.getString("code");                 // Kod, I.E GRASS / TREE etc
+                            String pollenTypeDisplayName = pollenTypeInfoObject.getString("displayName");   // Samma som Code men med Stor Versal och små gemen, Grass, Tree etc...
 
-                                break;  // Exit the loop once the desired pollen type is found
-                            }
+                            ////////////
+                            Log.d("PollenTypeCode", pollenTypeCode + "");
+                            Log.d("PollenTypeDisplayName", pollenTypeDisplayName + "");
+                            ////////////
+
+                            // TODO: Göra vad vi behöver med den här infon.
                         }
+
+                        JSONArray plantInfoArray = dailyInfoObject.getJSONArray("plantInfo");
+
+                        for (int j = 0; j < plantInfoArray.length(); j++) {
+                            JSONObject plantInfoObject = plantInfoArray.getJSONObject(j);
+
+                            String plantCode = plantInfoObject.getString("code");               // Plantans Kod I.E ASH, HAZEL, OAK
+                            String plantDisplayName = plantInfoObject.getString("displayName"); // Samma men stor bla bla blah i.e Ash, Hazel, Oak
+
+                            //////////////
+                            Log.d("PlantCode", plantCode + "");
+                            Log.d("PlantDisplayName",plantDisplayName + "");
+                            //////////////
+                        }
+
+                        /*
+                        //////////////////////////////////////////////////////////////
+
+                        Av någon anledning får min respons ingen fakta om nivåerna av varje pollen.
+                        Men det spelare ingen roll för principen är detsamma för alla attributer.
+                        Nytt object inuti ett annat blir som en ny for-loop att loopa igenom.
+                        Till exempel innehåller daily info pollentypeinfo som innehåller code
+
+
+
+                        Yttre Loop (for-loopen över dailyInfoArray):
+                        Syfte: Itererar över arrayen med daglig information.
+                        Vad den gör: Extraherar information för varje dag, inklusive datum, pollenTypeInfo och plantInfo arrayer.
+
+                        Inre Loop (for-loopen över pollenTypeInfoArray):
+                        Syfte: Itererar över arrayen med pollen typer för varje dag.
+                        Vad den gör: Extraherar information om varje pollen typ, som kod och displayName.
+
+                        Inre Loop (for-loopen över plantInfoArray):
+                        Syfte: Itererar över arrayen med växttyper för varje dag.
+                        Vad den gör: Extraherar information om varje växttyp, som kod och displayName.
+
+
+                        //////////////////////////////////////////////////////////////
+                         */
+
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -235,5 +286,7 @@ public class MainActivity extends AppCompatActivity {
             }*/
         }.execute();
     }
+
+
 
 }
