@@ -37,10 +37,11 @@ public class MainActivity extends AppCompatActivity {
     private final String KISTA_LOCATION = "59.40704825544182,17.94577779678242";
 
     private double KISTA_LATITUDE = 59.40704825544182;
-
     private double KISTA_LONGITUDE = 17.94577779678242;
-    private double WESTBANK_LONGITUDE = 35.32704825544182;
-    private double WESTBANK_LATITUDE = 32.32577779678242;
+
+    private double LATITUDE = 31.204389882873883;
+    private double LONGITUDE = 31.06549440597758;
+
     private final int FINE_PERMISSION_CODE = 1;
     Location currentLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         String apiKey = getString(R.string.api_key);
 
         //geocodeAddress(apiKey, KISTA_LOCATION);
-        fetchPollen(apiKey, KISTA_LATITUDE, KISTA_LONGITUDE);
+        fetchPollen(apiKey, LATITUDE, LONGITUDE);
 
     }
 
@@ -69,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
                 if (location != null) {
                     currentLocation = location;
 
-                    Log.d("123", "123");
                     Log.d("Lat1", "" + currentLocation.getLatitude());
                     Log.d("Long1", "" + currentLocation.getLongitude());
 
@@ -179,9 +179,9 @@ public class MainActivity extends AppCompatActivity {
                         String jsonString = response.toString();
                         parsePollen(jsonString);
 
-                        Log.d("jsonString", jsonString);
+                        Log.d("jsonString response", jsonString);
                     } else {
-                        Log.d("not successful", "Geocoding request failed with status code: " + responseCode);
+                        Log.d("not successful", "Pollen request failed with status code: " + responseCode);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                     JSONArray dailyInfoArray = json.getJSONArray("dailyInfo");
 
                     ///////////////////////////////////////////////////////
-                    // TODO: Göra något med desiredPollenTypes såsmåningom.
+                    // TODO: Göra något med desiredPollenTypes så småningom.
                     ArrayList<String> desiredPollenTypes = new ArrayList<>();
                     desiredPollenTypes.add("GRASS");
                     desiredPollenTypes.add("WEED");
