@@ -18,16 +18,19 @@
             android:id="@+id/btn_hamburger"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_hamburger_menu"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Pollen Allergen Selection"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:src="@drawable/ic_hamburger_menu" />
 
         <TextView
             android:id="@+id/location_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Location: add textidhere"
+            android:text="Location: Placeholder"
             android:layout_gravity="center"
-            android:layout_marginStart="60dp"/>
+            android:layout_marginStart="72sp"/>
     </LinearLayout>
 
     <!-- pollutant -->
@@ -35,29 +38,31 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pollutants"
-        android:textSize="20dp"/>
+        android:text="Air pollutants"
+        android:textSize="20sp"/>
 
     <ListView
+        android:id="@+id/pollutants"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="20dp" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="@android:color/holo_orange_light"
+        android:background="@android:color/holo_blue_light"
         android:layout_margin="30dp"/>
 
     <!-- Pollen specifically -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Allergies"
-        android:textSize="20dp"/>
+        android:text="Pollen"
+        android:textSize="20sp"/>
 
     <ListView
+        android:id="@+id/pollen_types"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
