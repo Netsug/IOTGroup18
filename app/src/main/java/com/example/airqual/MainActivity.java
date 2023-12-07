@@ -180,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
                     // Check if the request was successful (status code 200)
                     if (responseCode == 200) {
                         String jsonString = response.toString();
+
                         parsePollen(jsonString);
 
                         Log.d("jsonString response", jsonString);
@@ -234,11 +235,11 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("PollenTypeDisplayName", pollenTypeDisplayName + "");
                             ////////////
 
-                            // TODO: Göra vad vi behöver med den här infon.
+                            // TODO: Göra vad vi behöver med den här infon, börja med bara typer.
                         }
 
+                        //specific info, kan vänta med det
                         JSONArray plantInfoArray = dailyInfoObject.getJSONArray("plantInfo");
-
                         for (int j = 0; j < plantInfoArray.length(); j++) {
                             JSONObject plantInfoObject = plantInfoArray.getJSONObject(j);
 
@@ -258,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
                         Men det spelare ingen roll för principen är detsamma för alla attributer.
                         Nytt object inuti ett annat blir som en ny for-loop att loopa igenom.
                         Till exempel innehåller daily info pollentypeinfo som innehåller code
-
 
 
                         Yttre Loop (for-loopen över dailyInfoArray):
@@ -282,7 +282,6 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-
 
             /*protected void onPostExecute(String result) {
                 Log.d("MainActivity", "Pollen result: " + result);
