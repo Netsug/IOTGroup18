@@ -39,12 +39,13 @@ public class MainActivity extends AppCompatActivity {
     private double KISTA_LATITUDE = 59.40704825544182;
     private double KISTA_LONGITUDE = 17.94577779678242;
 
+    //Egypt coordinates, used for testing due to high pollination in region, and low pollination in Stockholm
     private double LATITUDE = 31.204389882873883;
     private double LONGITUDE = 31.06549440597758;
 
     private final int FINE_PERMISSION_CODE = 1;
-    Location currentLocation;
-    FusedLocationProviderClient fusedLocationProviderClient;
+    private Location currentLocation;
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         String apiKey = getString(R.string.api_key);
 
         //geocodeAddress(apiKey, KISTA_LOCATION);
+
+        //When pollen value is 0, there is nothing in the respective part of the response
         fetchPollen(apiKey, LATITUDE, LONGITUDE);
 
     }
