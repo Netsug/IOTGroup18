@@ -269,21 +269,21 @@ public class MainActivity extends AppCompatActivity {
 
                             else{
                                 /*  TODO: Om den här biten av koden körs så
-                                    finns det ingen value, alltså är det lika med 0
+                                    finns det ingen UPI value, alltså är det lika med 0
                                     och är inte ett problem
-
                                     Iallafall verkar det så, om jag har förstått det rätt.
                                  */
-                                Log.d("0", "0");
+                                Log.d("UPI Value", "0");
                             }
 
                             // TODO: Process the extracted information as needed.
                         }
 
                         Log.d("PollenType: ", PollenTypes.get(0).toString());
+                        return PollenTypes;
 
 
-                        //Specific plant info
+                        /* Specific plant info
                         JSONArray plantInfoArray = dailyInfoObject.getJSONArray("plantInfo");
                         for (int j = 0; j < plantInfoArray.length(); j++) {
                             JSONObject plantInfoObject = plantInfoArray.getJSONObject(j);
@@ -305,11 +305,14 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             // TODO: Process the extracted information as needed.
-                        }
+                        }*/
+
+
                     }
 
                 } catch (Exception e) {
                     e.printStackTrace();
+                    return null;
                 }
                 return null;
             }
