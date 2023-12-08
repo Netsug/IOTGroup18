@@ -3,14 +3,10 @@ package com.example.airqual;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -50,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageButton buttonHamburger;
     private ListView pollenTypesListView;
+    private PollenItemAdapter pollenItemAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,11 +57,10 @@ public class MainActivity extends AppCompatActivity {
         buttonHamburger = findViewById(R.id.btn_hamburger);
         pollenTypesListView = findViewById(R.id.pollen_types);
 
-
         //geocodeAddress(apiKey, KISTA_LOCATION);
 
         //When pollen value is 0, there is nothing in the respective part of the response
-        fetchPollen(apiKey, LATITUDE, LONGITUDE);
+        fetchPollen(apiKey, LATITUDE, LONGITUDE, this);
 
     }
 
@@ -153,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         }.execute();
     }
 
-    public static void fetchPollen(String apiKey, double lat, double lng) {
+    public static void fetchPollen(String apiKey, double lat, double lng, MainActivity activity) {
         new AsyncTask<Void, Void, String>() {
             protected String doInBackground(Void... voids) {
                 try {
@@ -218,6 +214,11 @@ public class MainActivity extends AppCompatActivity {
                     desiredPollenTypes.add("WEED");
                     desiredPollenTypes.add("TREE");
 
+                    ArrayList<PollenType> PollenTypes = new ArrayList<>();
+                    ArrayList<String> nameOfPollen = new ArrayList<>();
+                    ArrayList<String> categoryPollen = new ArrayList<>();
+                    ArrayList<String> healthRecommendation = new ArrayList<>();
+
                     for (int i = 0; i < dailyInfoArray.length(); i++) {
                         JSONObject dailyInfoObject = dailyInfoArray.getJSONObject(i);
 
@@ -252,8 +253,19 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d("IndexValue", value + "");
                                 Log.d("IndexCategory", category + "");
 
+                                JSONArray healthRecommendationsArray = pollenTypeInfoObject.getJSONArray("healthRecommendations");
+                                String recommendation = healthRecommendationsArray.getString(i);
+                                Log.d("HealthRecommendation", recommendation);
+
+                                PollenTypes.add(new PollenType(pollenTypeDisplayName, category, recommendation));
+
+                                //healthRecommendation.add(recommendation);
+                                //nameOfPollen.add(pollenTypeDisplayName);
+                                //categoryPollen.add(category);
+                                //healthRecommendation.add(recommendation);
 
                             }
+
                             else{
                                 /*  TODO: Om den här biten av koden körs så
                                     finns det ingen value, alltså är det lika med 0
@@ -264,26 +276,14 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d("0", "0");
                             }
 
-                            if (pollenTypeInfoObject.has("healthRecommendations")) {
-                                JSONArray healthRecommendationsArray = pollenTypeInfoObject.getJSONArray("healthRecommendations");
-                                for (int k = 0; k < healthRecommendationsArray.length(); k++) {
-                                    String recommendation = healthRecommendationsArray.getString(k);
-                                    Log.d("HealthRecommendation", recommendation);
-                                }
-                            }
-                            else {
-                                /*
-                                Samma som Else blocket ovan
-                                 */
-                            }
-
                             // TODO: Process the extracted information as needed.
                         }
+
+                        Log.d("PollenType: ", PollenTypes.get(0).toString());
 
 
                         //Specific plant info
                         JSONArray plantInfoArray = dailyInfoObject.getJSONArray("plantInfo");
-
                         for (int j = 0; j < plantInfoArray.length(); j++) {
                             JSONObject plantInfoObject = plantInfoArray.getJSONObject(j);
 
@@ -298,17 +298,25 @@ public class MainActivity extends AppCompatActivity {
                                 JSONObject plantDescriptionObject = plantInfoObject.getJSONObject("plantDescription");
                                 // Extract fields as needed
 
-                                Log.d("PlantType", plantDescriptionObject.getString("type"));
-                                Log.d("PlantFamily", plantDescriptionObject.getString("family"));
+                                //Log.d("PlantType", plantDescriptionObject.getString("type"));
+                                //Log.d("PlantFamily", plantDescriptionObject.getString("family"));
                                 // Add more fields as needed
                             }
 
                             // TODO: Process the extracted information as needed.
                         }
                     }
+
+                    updateListView(nameOfPollen, categoryPollen, healthRecommendation);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+
+            private void updateListView(ArrayList<String> nameOfPollen, ArrayList<String> categoryPollen, ArrayList<String> healthRecommendation) {
+
+
+
             }
 
             protected void onPostExecute(String result) {
