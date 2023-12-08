@@ -10,6 +10,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -150,9 +151,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void fetchPollen(String apiKey, double lat, double lng, MainActivity activity) {
-        new AsyncTask<Void, Void, String>() {
-            protected String doInBackground(Void... voids) {
+        new AsyncTask<Void, Void, ArrayList<PollenType>>() {
+            protected ArrayList<PollenType> doInBackground(Void... voids) {
                 try {
+                    ArrayList<PollenType> pollenTypes;
                     // Correctly set up the URL for the Geocoding API request
                     String urlString = "https://pollen.googleapis.com/v1/forecast:lookup?key="+apiKey+"&location.longitude="+lng+"&location.latitude="+lat+"&days=1";
 
@@ -185,9 +187,8 @@ public class MainActivity extends AppCompatActivity {
                     if (responseCode == 200) {
                         String jsonString = response.toString();
 
-                        parsePollen(jsonString);
-
                         Log.d("jsonString response", jsonString);
+                        return parsePollen(jsonString);
                     } else {
                         Log.d("Not successful, bad response code", "Pollen request failed with response code: " + responseCode);
                     }
@@ -198,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-            public void parsePollen(String pollenInfo) {
+            public ArrayList<PollenType> parsePollen(String pollenInfo) {
                 final String jsonResponse = pollenInfo;
 
                 try {
@@ -307,20 +308,20 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    updateListView(nameOfPollen, categoryPollen, healthRecommendation);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                return null;
             }
 
-            private void updateListView(ArrayList<String> nameOfPollen, ArrayList<String> categoryPollen, ArrayList<String> healthRecommendation) {
-
-
-
-            }
-
-            protected void onPostExecute(String result) {
-                Log.d("MainActivity", "Post execute message...");
+            protected void onPostExecute(ArrayList<PollenType> result) {
+                if (result != null && !result.isEmpty()) {
+                    // Create and set the adapter
+                    activity.runOnUiThread(() -> {
+                        PollenItemAdapter adapter = new PollenItemAdapter(activity, result);
+                        activity.pollenTypesListView.setAdapter(adapter);
+                    });
+                }
             }
 
         }.execute();
