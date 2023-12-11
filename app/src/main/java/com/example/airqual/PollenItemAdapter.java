@@ -1,6 +1,7 @@
 package com.example.airqual;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,5 +51,7 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
         // Implement the logic to display the CardView here
         // This might involve updating a CardView in your layout,
         // or opening a new fragment or activity, depending on your design
+        Log.d("display card view", "true");
     }
+
 }
