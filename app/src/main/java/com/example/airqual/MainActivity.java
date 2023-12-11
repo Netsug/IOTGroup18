@@ -332,14 +332,27 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }.execute();
     }
 
-    public void showCardView(String recommendation) {
+    public void showCardView(PollenType pollenType) {
         Log.d("display card view", "true");
-
+        TextView tvTitle = findViewById(R.id.pollen_title);
+        tvTitle.setText(pollenType.getName());
+        TextView tvRecommendations = findViewById(R.id.recommendation_text);
+        tvRecommendations.setText(pollenType.getHealthRecommendations());
         CardView cardView = findViewById(R.id.recommendation_card);
 
         //tvTitle = findViewById(R.id.pollen_title);
         cardView.setVisibility(View.VISIBLE);
         //CardView recommendationsCard = new CardView(getContext());
+
+        ImageButton buttonDismiss = findViewById(R.id.btn_dismiss_card);
+
+        buttonDismiss.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Set the CardView's visibility to GONE or INVISIBLE
+                cardView.setVisibility(View.GONE); // or View.INVISIBLE
+            }
+        });
     }
 
 }

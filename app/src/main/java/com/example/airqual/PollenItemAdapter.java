@@ -21,9 +21,10 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
 
     private TextView tvTitle;
     private OnPollenItemClickListener mListener;
+    PollenType pollenType;
 
     public interface OnPollenItemClickListener {
-        void showCardView(String recommendation);
+        void showCardView(PollenType pollenType);
     }
 
     public PollenItemAdapter(Context context, List<PollenType> pollenTypes, OnPollenItemClickListener listener) {
@@ -34,7 +35,7 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
-        PollenType pollenType = getItem(position);
+        pollenType = getItem(position);
 
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
@@ -52,7 +53,7 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
             @Override
             public void onClick(View view) {
                 if (mListener != null) {
-                    mListener.showCardView(pollenType.getHealthRecommendations());
+                    mListener.showCardView(pollenType);
                 }
 
             }
