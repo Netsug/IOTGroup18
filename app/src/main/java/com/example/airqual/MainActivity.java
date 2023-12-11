@@ -152,6 +152,151 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }.execute();
     }
 
+    public static void fetchAirQuality (String apiKey, double lat, double lng, MainActivity activity) {
+        new AsyncTask<Void, Void, String>() {
+            protected String doInBackground(Void... voids) {
+
+                try {
+                    // Correctly set up the URL for the Geocoding API request
+                    String urlString = "https://airquality.googleapis.com/v1/currentConditions:lookup?key="+apiKey+
+                            "&location.longitude="+lng+"&location.latitude="+lat;
+
+                    // Create a URL object
+                    URL url = new URL(urlString);
+
+                    // Open a connection to the URL
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                    // Set the request method to GET
+                    connection.setRequestMethod("GET");
+
+                    // Get the response code
+                    int responseCode = connection.getResponseCode();
+
+                    // Read the response from the API
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+
+                    // Close the reader and the connection
+                    reader.close();
+                    connection.disconnect();
+
+                    // Check if the request was successful (status code 200)
+                    if (responseCode == 200) {
+                        String jsonString = response.toString();
+                        Log.d("jsonString", jsonString);
+                        parseExtendedAirQuality("");
+                    } else {
+                        Log.d("not successful", "Geocoding request failed with status code: " + responseCode);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+
+            }
+
+            public void parseExtendedAirQuality(String extendedAirQualityInfo) {
+                final String jsonResponse = extendedAirQualityInfo;
+
+                try {
+                    JSONObject json = new JSONObject(jsonResponse);
+
+                    String dateTime = json.getString("dateTime");
+                    String regionCode = json.getString("regionCode");
+
+                    Log.d("DateTime", dateTime);
+                    Log.d("RegionCode", regionCode);
+
+                    JSONArray indexesArray = json.getJSONArray("indexes");
+
+                    for (int i = 0; i < indexesArray.length(); i++) {
+                        JSONObject indexObject = indexesArray.getJSONObject(i);
+
+                        String indexCode = indexObject.getString("code");
+                        String indexDisplayName = indexObject.getString("displayName");
+                        int aqi = indexObject.getInt("aqi");
+                        String aqiDisplay = indexObject.getString("aqiDisplay");
+                        String category = indexObject.getString("category");
+                        String dominantPollutant = indexObject.getString("dominantPollutant");
+
+                        Log.d("IndexCode", indexCode);
+                        Log.d("IndexDisplayName", indexDisplayName);
+                        Log.d("AQI", String.valueOf(aqi));
+                        Log.d("AQIDisplay", aqiDisplay);
+                        Log.d("Category", category);
+                        Log.d("DominantPollutant", dominantPollutant);
+
+                        JSONObject colorObject = indexObject.getJSONObject("color");
+                        int red = colorObject.getInt("red");
+                        int green = colorObject.getInt("green");
+                        int blue = colorObject.getInt("blue");
+                        int alpha = colorObject.getInt("alpha");
+
+                        Log.d("ColorRed", String.valueOf(red));
+                        Log.d("ColorGreen", String.valueOf(green));
+                        Log.d("ColorBlue", String.valueOf(blue));
+                        Log.d("ColorAlpha", String.valueOf(alpha));
+
+                        // TODO: Process the extracted index information as needed.
+                    }
+
+                    JSONArray pollutantsArray = json.getJSONArray("pollutants");
+
+                    for (int i = 0; i < pollutantsArray.length(); i++) {
+                        JSONObject pollutantObject = pollutantsArray.getJSONObject(i);
+
+                        String pollutantCode = pollutantObject.getString("code");
+                        String pollutantDisplayName = pollutantObject.getString("displayName");
+                        String pollutantFullName = pollutantObject.getString("fullName");
+
+                        JSONObject concentrationObject = pollutantObject.getJSONObject("concentration");
+                        double concentrationValue = concentrationObject.getDouble("value");
+                        String concentrationUnits = concentrationObject.getString("units");
+
+                        Log.d("PollutantCode", pollutantCode);
+                        Log.d("PollutantDisplayName", pollutantDisplayName);
+                        Log.d("PollutantFullName", pollutantFullName);
+                        Log.d("ConcentrationValue", String.valueOf(concentrationValue));
+                        Log.d("ConcentrationUnits", concentrationUnits);
+
+                        // TODO: Process the extracted pollutant information as needed.
+
+                        if (pollutantObject.has("additionalInfo")) {
+                            JSONObject additionalInfoObject = pollutantObject.getJSONObject("additionalInfo");
+
+                            String sources = additionalInfoObject.getString("sources");
+                            String effects = additionalInfoObject.getString("effects");
+
+                            Log.d("PollutantSources", sources);
+                            Log.d("PollutantEffects", effects);
+
+                            // TODO: Process the additional information as needed.
+                        }
+                    }
+
+                    JSONObject healthRecommendationsObject = json.getJSONObject("healthRecommendations");
+
+                    Log.d("GeneralPopulation", healthRecommendationsObject.getString("generalPopulation"));
+                    Log.d("Elderly", healthRecommendationsObject.getString("elderly"));
+                    // TODO: Add logging for other health recommendations.
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            protected void onPostExecute(String result) {
+                Log.d("MainActivity", "Geocoding result: " + result);
+            }
+        }.execute();
+    }
+
     public static void fetchPollen(String apiKey, double lat, double lng, MainActivity activity) {
         new AsyncTask<Void, Void, ArrayList<PollenType>>() {
             protected ArrayList<PollenType> doInBackground(Void... voids) {
