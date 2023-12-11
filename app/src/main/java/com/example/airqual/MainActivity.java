@@ -2,6 +2,7 @@ package com.example.airqual;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -23,6 +24,7 @@ import android.util.Log;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -31,7 +33,7 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PollenItemAdapter.OnPollenItemClickListener {
 
 
     private final String KISTA_ADDRESS = "Borgarfjordsgatan 12, 164 55 Kista";
@@ -321,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result != null && !result.isEmpty()) {
                     // Create and set the adapter
                     activity.runOnUiThread(() -> {
-                        PollenItemAdapter adapter = new PollenItemAdapter(activity, result);
+                        PollenItemAdapter adapter = new PollenItemAdapter(activity, result, activity);
                         activity.pollenTypesListView.setAdapter(adapter);
                     });
                 }
@@ -330,6 +332,14 @@ public class MainActivity extends AppCompatActivity {
         }.execute();
     }
 
+    public void showCardView(String recommendation) {
+        Log.d("display card view", "true");
 
+        CardView cardView = findViewById(R.id.recommendation_card);
+
+        //tvTitle = findViewById(R.id.pollen_title);
+        cardView.setVisibility(View.VISIBLE);
+        //CardView recommendationsCard = new CardView(getContext());
+    }
 
 }

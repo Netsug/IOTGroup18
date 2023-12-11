@@ -9,14 +9,26 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.cardview.widget.CardView;
+
 import com.example.airqual.PollenType;
+
+import org.w3c.dom.Text;
 
 import java.util.List;
 
 public class PollenItemAdapter extends ArrayAdapter<PollenType> {
 
-    public PollenItemAdapter(Context context, List<PollenType> pollenTypes) {
+    private TextView tvTitle;
+    private OnPollenItemClickListener mListener;
+
+    public interface OnPollenItemClickListener {
+        void showCardView(String recommendation);
+    }
+
+    public PollenItemAdapter(Context context, List<PollenType> pollenTypes, OnPollenItemClickListener listener) {
         super(context, 0, pollenTypes);
+        mListener = listener;
     }
 
     @Override
@@ -39,7 +51,10 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
         btnShowHealthRecommendation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                displayCardView(pollenType.getHealthRecommendations());
+                if (mListener != null) {
+                    mListener.showCardView(pollenType.getHealthRecommendations());
+                }
+
             }
         });
 
@@ -47,11 +62,5 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
         return convertView;
     }
 
-    private void displayCardView(String healthRecommendation) {
-        // Implement the logic to display the CardView here
-        // This might involve updating a CardView in your layout,
-        // or opening a new fragment or activity, depending on your design
-        Log.d("display card view", "true");
-    }
 
 }
