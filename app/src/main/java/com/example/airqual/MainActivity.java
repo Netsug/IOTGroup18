@@ -11,6 +11,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         pollenTypesListView = findViewById(R.id.pollen_types);
 
         //geocodeAddress(apiKey, KISTA_LOCATION);
-
+        fetchAirQuality(apiKey, 51.500000, 0.120000, this);
         //When pollen value is 0, there is nothing in the respective part of the response
         fetchPollen(apiKey, LATITUDE, LONGITUDE, this);
 
@@ -157,9 +158,8 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
             protected String doInBackground(Void... voids) {
 
                 try {
-                    // Correctly set up the URL for the Geocoding API request
-                    String urlString = "https://airquality.googleapis.com/v1/currentConditions:lookup?key="+apiKey+
-                            "&location.longitude="+lng+"&location.latitude="+lat;
+                    // Set up the URL for the Geocoding API request
+                    final String urlString = "https://airquality.googleapis.com/v1/currentConditions:lookup?key=" + apiKey;
 
                     // Create a URL object
                     URL url = new URL(urlString);
@@ -167,33 +167,66 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                     // Open a connection to the URL
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-                    // Set the request method to GET
-                    connection.setRequestMethod("GET");
+                    // Set the request method to POST
+                    connection.setRequestMethod("POST");
+
+                    // Set request headers
+                    connection.setRequestProperty("Content-Type", "application/json");
+                    connection.setRequestProperty("Accept", "application/json");
+
+                    // Enable input/output streams
+                    connection.setDoOutput(true);
+                    connection.setDoInput(true);
+
+                    // Prepare JSON input for the request
+                    final String jsonInputString = "{" +
+                            "\"location\": {" +
+                            "\"latitude\":" + lat + "," +
+                            "\"longitude\":" + lng +
+                            "}," +
+                            "\"extraComputations\": [" +
+                            "\"LOCAL_AQI\"," +
+                            "\"HEALTH_RECOMMENDATIONS\"," +
+                            "\"POLLUTANT_ADDITIONAL_INFO\"," +
+                            "\"DOMINANT_POLLUTANT_CONCENTRATION\"," +
+                            "\"POLLUTANT_CONCENTRATION\"," + 
+                            "\"EXTRA_COMPUTATION_UNSPECIFIED\"," +
+                            "]" +
+                            "}";
+
+                    // The JSON-request
+                    // Log.d("Request JSON", jsonInputString);
+
+                    // Send JSON data in the request body
+                    try (OutputStream os = connection.getOutputStream()) {
+                        byte[] input = jsonInputString.getBytes("utf-8");
+                        os.write(input, 0, input.length);
+                    }
 
                     // Get the response code
                     int responseCode = connection.getResponseCode();
 
                     // Read the response from the API
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    StringBuilder response = new StringBuilder();
-                    String line;
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+                            StringBuilder response = new StringBuilder();
+                            String responseLine;
+                            while ((responseLine = br.readLine()) != null) {
+                                response.append(responseLine.trim());
+                            }
 
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
+                            parseExtendedAirQuality(response+"");
+
+                            Log.d("API Response", response + "");
+                        }
+                    } else {
+                        Log.d("API TRY: ", jsonInputString);
+                        Log.d("API Request Failed", "Air Quality API request failed with status code: " + responseCode);
                     }
 
-                    // Close the reader and the connection
-                    reader.close();
+                    // Disconnect the connection
                     connection.disconnect();
 
-                    // Check if the request was successful (status code 200)
-                    if (responseCode == 200) {
-                        String jsonString = response.toString();
-                        Log.d("jsonString", jsonString);
-                        parseExtendedAirQuality("");
-                    } else {
-                        Log.d("not successful", "Geocoding request failed with status code: " + responseCode);
-                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -235,13 +268,13 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                         JSONObject colorObject = indexObject.getJSONObject("color");
                         int red = colorObject.getInt("red");
                         int green = colorObject.getInt("green");
-                        int blue = colorObject.getInt("blue");
-                        int alpha = colorObject.getInt("alpha");
+                        //int blue = colorObject.getInt("blue");
+                        //int alpha = colorObject.getInt("alpha");
 
                         Log.d("ColorRed", String.valueOf(red));
                         Log.d("ColorGreen", String.valueOf(green));
-                        Log.d("ColorBlue", String.valueOf(blue));
-                        Log.d("ColorAlpha", String.valueOf(alpha));
+                        //Log.d("ColorBlue", String.valueOf(blue));
+                        //Log.d("ColorAlpha", String.valueOf(alpha));
 
                         // TODO: Process the extracted index information as needed.
                     }
