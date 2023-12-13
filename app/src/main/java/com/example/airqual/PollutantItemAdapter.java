@@ -15,13 +15,16 @@ import com.example.airqual.PollenType;
 
 import org.w3c.dom.Text;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
 
     private TextView tvTitle;
     private OnPollutantItemClickListener mListener;
-    Pollutant pollutant;
+    private Pollutant pollutant;
+
+    private HashMap<String, String> unitConverterMap;
 
     public interface OnPollutantItemClickListener {
         void showPollutantCardView(Pollutant pollutant);
@@ -30,6 +33,7 @@ public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
     public PollutantItemAdapter(Context context, List<Pollutant> pollutants, OnPollutantItemClickListener listener) {
         super(context, 0, pollutants);
         mListener = listener;
+        unitConverterMap = new HashMap<>();
     }
 
     @Override
@@ -48,12 +52,28 @@ public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
         Button btnShowInfo = convertView.findViewById(R.id.btn_pollutant_info);
 
         tvName.setText(pollutant.getName());
-        tvConcentrationUnitValue.setText(pollutant.getConcentrationValue() + ": " + pollutant.getConcentrationUnit());
+        ////////
 
+        final char micro = '\u00B5';
+
+        unitConverterMap.put("PARTS_PER_BILLION", "ppb");
+        unitConverterMap.put("MICROGRAMS_PER_CUBIC_METER", micro + "g/m^3");
+
+        for (String key : unitConverterMap.keySet()){
+            if (key.equals(pollutant.getConcentrationUnit())){
+                tvConcentrationUnitValue.setText(pollutant.getConcentrationValue() + unitConverterMap.get(key));
+                break;
+            }
+        }
+
+        ////////
         btnShowInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mListener != null) {
+                    // Get the data item for this position
+                    pollutant = getItem(position);
+
                     mListener.showPollutantCardView(pollutant);
                 }
             }

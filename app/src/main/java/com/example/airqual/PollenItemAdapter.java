@@ -52,6 +52,7 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
             @Override
             public void onClick(View view) {
                 if (mListener != null) {
+                    pollenType = getItem(position);
                     mListener.showCardView(pollenType);
                 }
 

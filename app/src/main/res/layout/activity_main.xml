@@ -1,152 +1,160 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <LinearLayout
+    <FrameLayout
         tools:context=".MainActivity"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center">
-
-    <!-- hamburger and location-->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp">
-
-            <ImageButton
-                android:id="@+id/btn_hamburger"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Pollen Allergen Selection"
-                android:minWidth="48dp"
-                android:minHeight="48dp"
-                android:src="@drawable/ic_hamburger_menu" />
-
-            <TextView
-                android:id="@+id/location_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Location: Placeholder"
-                android:layout_gravity="center"
-                android:layout_marginStart="72sp"/>
-        </LinearLayout>
-
-        <!-- pollutant -->
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Air Quality"
-            android:textSize="20sp"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:background="@android:color/holo_blue_light"
-            android:layout_margin="30dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Total:"
-                android:layout_gravity="center"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:id="@+id/uaqi_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="PLACEHOLDER"/>
-
-            <Button
-                android:id="@+id/btn_pollutant_recommendation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="RECS" />
-        </LinearLayout>
-
-        <ListView
-            android:id="@+id/air_pollutants"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginTop="0dp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:background="@android:color/holo_blue_light"
-            android:layout_margin="30dp"/>
-
-        <!-- Pollen specifically -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pollen"
-            android:textSize="20sp"/>
-
-        <ListView
-            android:id="@+id/pollen_types"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginTop="20dp"/>
-    </LinearLayout>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/recommendation_card"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="32dp"
-        android:radius="8dp"
-        android:visibility="gone">
-
-        <LinearLayout
+            tools:context=".MainActivity"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/pollen_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TITLE_PLACEHOLDER"
-                android:textStyle="bold"
-                android:layout_gravity="center"/>
-
-            <TextView
-                android:id="@+id/recommendation_text"
+            android:gravity="center">
+    
+        <!-- hamburger and location-->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"/>
-
-            <ImageButton
-                android:id="@+id/btn_dismiss_card"
+                android:orientation="horizontal"
+                android:padding="16dp">
+    
+                <ImageButton
+                    android:id="@+id/btn_hamburger"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Pollen Allergen Selection"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
+                    android:src="@drawable/ic_hamburger_menu" />
+    
+                <TextView
+                    android:id="@+id/location_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Location: Placeholder"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="72sp"/>
+            </LinearLayout>
+    
+            <!-- pollutant -->
+    
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|bottom"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Dismiss Card"
-                android:minWidth="48dp"
-                android:minHeight="48dp"
-                android:src="@drawable/ic_x_icon" />
-
+                android:text="Air Quality"
+                android:textSize="20sp"/>
+    
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="@android:color/holo_blue_light"
+                android:layout_margin="30dp"/>
+    
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total:"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"/>
+    
+                <TextView
+                    android:id="@+id/uaqi_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="PLACEHOLDER"/>
+    
+                <Button
+                    android:id="@+id/btn_pollutant_recommendation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RECS" />
+            </LinearLayout>
+    
+            <ListView
+                android:id="@+id/air_pollutants"
+                android:layout_width="match_parent"
+                android:layout_height="127dp"
+                android:layout_weight="1"
+                android:layout_marginTop="0dp" />
+    
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="@android:color/holo_blue_light"
+                android:layout_margin="30dp"/>
+    
+            <!-- Pollen specifically -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pollen"
+                android:textSize="20sp"/>
+    
+            <ListView
+                android:id="@+id/pollen_types"
+                android:layout_width="match_parent"
+                android:layout_height="127dp"
+                android:layout_weight="1"
+                android:layout_marginTop="20dp"/>
         </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-</FrameLayout>
+    
+        <androidx.cardview.widget.CardView
+            android:id="@+id/recommendation_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="32dp"
+            android:radius="8dp"
+            android:visibility="gone">
+    
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+    
+                <TextView
+                    android:id="@+id/card_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TITLE_PLACEHOLDER"
+                    android:textStyle="bold"
+                    android:layout_gravity="center"/>
+    
+                <TextView
+                    android:id="@+id/information_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"/>
+    
+                <ImageButton
+                    android:id="@+id/btn_dismiss_card"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|bottom"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Dismiss Card"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
+                    android:src="@drawable/ic_x_icon" />
+    
+            </LinearLayout>
+    
+        </androidx.cardview.widget.CardView>
+    </FrameLayout>
+</ScrollView>

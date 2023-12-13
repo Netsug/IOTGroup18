@@ -289,15 +289,14 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                         Log.d("ConcentrationValue", String.valueOf(concentrationValue));
                         Log.d("ConcentrationUnits", concentrationUnits);
 
-                        Pollutant pollutant = new Pollutant(pollutantDisplayName, concentrationValue, concentrationUnits);
+                        JSONObject healthRecommendationsObject = json.getJSONObject("healthRecommendations");
+                        Log.d("GeneralPopulation", healthRecommendationsObject.getString("generalPopulation"));
+
+                        Pollutant pollutant = new Pollutant(pollutantDisplayName, concentrationValue, concentrationUnits, healthRecommendationsObject.getString("generalPopulation"));
                         pollutants.add(pollutant);
 
                     }
 
-                    JSONObject healthRecommendationsObject = json.getJSONObject("healthRecommendations");
-
-                    Log.d("GeneralPopulation", healthRecommendationsObject.getString("generalPopulation"));
-                    Log.d("Elderly", healthRecommendationsObject.getString("elderly"));
                     // TODO: Add logging for other health recommendations.
                     return pollutants;
 
@@ -499,15 +498,13 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
     public void showCardView(PollenType pollenType) {
         Log.d("display card view", "true");
-        TextView tvTitle = findViewById(R.id.pollen_title);
-        tvTitle.setText(pollenType.getName());
-        TextView tvRecommendations = findViewById(R.id.recommendation_text);
-        tvRecommendations.setText(pollenType.getHealthRecommendations());
         CardView cardView = findViewById(R.id.recommendation_card);
+        TextView tvTitle = findViewById(R.id.card_title);
+        tvTitle.setText(pollenType.getName());
+        TextView tvRecommendations = findViewById(R.id.information_text);
+        tvRecommendations.setText(pollenType.getHealthRecommendations());
 
-        //tvTitle = findViewById(R.id.pollen_title);
         cardView.setVisibility(View.VISIBLE);
-        //CardView recommendationsCard = new CardView(getContext());
 
         ImageButton buttonDismiss = findViewById(R.id.btn_dismiss_card);
 
@@ -522,13 +519,14 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
     public void showPollutantCardView(Pollutant pollutant) {
         Log.d("display card view", "true");
-        TextView tvTitle = findViewById(R.id.pollen_title);
-        tvTitle.setText(pollutant.getName());
-        TextView tvConcentrationUnitValue = findViewById(R.id.pollutant_value_unit);
-        tvConcentrationUnitValue.setText(pollutant.getConcentrationValue() + ": " + pollutant.getConcentrationUnit());
         CardView cardView = findViewById(R.id.recommendation_card);
 
-        //tvTitle = findViewById(R.id.pollen_title);
+        TextView tvTitle = findViewById(R.id.card_title);
+        tvTitle.setText(pollutant.getName());
+
+        TextView tvInformation = findViewById(R.id.information_text);
+        tvInformation.setText(pollutant.getRecommendations());
+
         cardView.setVisibility(View.VISIBLE);
         //CardView recommendationsCard = new CardView(getContext());
 
@@ -539,6 +537,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
             public void onClick(View view) {
                 // Set the CardView's visibility to GONE or INVISIBLE
                 cardView.setVisibility(View.GONE); // or View.INVISIBLE
+                Log.d("Click" , pollutant.getName()+ "");
             }
         });
     }
