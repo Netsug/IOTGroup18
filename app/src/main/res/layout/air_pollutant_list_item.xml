@@ -21,7 +21,7 @@
 
 
     <Button
-        android:id="@+id/btn_recommendation"
+        android:id="@+id/btn_pollutant_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="INFO" />

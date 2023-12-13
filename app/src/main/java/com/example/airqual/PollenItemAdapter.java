@@ -19,7 +19,6 @@ import java.util.List;
 
 public class PollenItemAdapter extends ArrayAdapter<PollenType> {
 
-    private TextView tvTitle;
     private OnPollenItemClickListener mListener;
     PollenType pollenType;
 

@@ -43,15 +43,47 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Air pollutants"
+            android:text="Air Quality"
             android:textSize="20sp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@android:color/holo_blue_light"
+            android:layout_margin="30dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total:"
+                android:layout_gravity="center"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/uaqi_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="PLACEHOLDER"/>
+
+            <Button
+                android:id="@+id/btn_pollutant_recommendation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RECS" />
+        </LinearLayout>
 
         <ListView
             android:id="@+id/air_pollutants"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="0dp" />
 
         <View
             android:layout_width="match_parent"
