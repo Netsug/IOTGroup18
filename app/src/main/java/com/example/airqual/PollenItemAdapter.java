@@ -31,6 +31,8 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
         mListener = listener;
     }
 
+    // PUT ONLY ITEMS IN THAT USER SELECTED, IF ITEM NOT IN RESPONSE, SAY ITS LOW POLLEN LEVEL
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position

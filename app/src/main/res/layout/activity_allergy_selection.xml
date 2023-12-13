@@ -50,6 +50,6 @@
             android:padding="20dp"/>
     </LinearLayout>
 
-
+<!-- cancel top right, save bottom center-->
 
 </LinearLayout>

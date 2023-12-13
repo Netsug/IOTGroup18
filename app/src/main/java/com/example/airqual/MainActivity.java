@@ -36,7 +36,6 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements PollenItemAdapter.OnPollenItemClickListener, PollutantItemAdapter.OnPollutantItemClickListener {
 
-
     private final String KISTA_ADDRESS = "Borgarfjordsgatan 12, 164 55 Kista";
     private final String KISTA_LOCATION = "59.40704825544182,17.94577779678242";
     private double KISTA_LATITUDE = 59.40704825544182;
