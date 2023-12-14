@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }
     }
 
-    private String[] getPollen() {
+    private static String[] getPollen() {
         String[] pollen = {
                 "Hazel",
                 "Ash",
@@ -112,11 +112,16 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                 "Pine",
                 "Birch",
                 "Olive",
-                "Grasses",
+                "Graminales",
                 "Ragweed",
                 "Alder",
-                "Mugwort"
+                "Mugwort",
+                "Elm",
+                "Maple",
+                "Juniper",
+                "Cypress pine"
         };
+
         return pollen;
     }
 

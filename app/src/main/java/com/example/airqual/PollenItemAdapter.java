@@ -50,15 +50,12 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
         tvName.setText(pollenType.getName());
         tvCategory.setText(pollenType.getCategory());
 
-        btnShowHealthRecommendation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mListener != null) {
-                    pollenType = getItem(position);
-                    mListener.showCardView(pollenType);
-                }
-
+        btnShowHealthRecommendation.setOnClickListener(view -> {
+            if (mListener != null) {
+                pollenType = getItem(position);
+                mListener.showCardView(pollenType);
             }
+
         });
 
         // Return the completed view to render on screen
