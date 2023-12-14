@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import android.Manifest;
 import android.content.Intent;
@@ -29,6 +30,7 @@ import android.util.Log;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -43,12 +45,9 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
     private final String KISTA_ADDRESS = "Borgarfjordsgatan 12, 164 55 Kista";
     private final String KISTA_LOCATION = "59.40704825544182,17.94577779678242";
-    private double KISTA_LATITUDE = 59.40704825544182;
-    private double KISTA_LONGITUDE = 17.94577779678242;
-    private double LATITUDE = 31.204389882873883;
-    private double LONGITUDE = 31.06549440597758;
+    private final double KISTA_LATITUDE = 59.40704825544182;
+    private final double KISTA_LONGITUDE = 17.94577779678242;
 
-    private final int FINE_PERMISSION_CODE = 1;
     private Location currentLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private DrawerLayout drawerLayout;
@@ -56,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
     private ListView pollenTypesListView;
     private ListView pollutantListView;
+    private PollenItemAdapter pollenItemAdapter;
     private HashMap<String, Boolean> checkBoxStates = new HashMap<>();
 
     @Override
@@ -80,12 +80,19 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
             drawerLayout.closeDrawer(allergenSelectionDrawer);
         });
 
+        Button saveButton = findViewById(R.id.btn_save);
+        saveButton.setOnClickListener(view -> {
+            checkStates();
+        });
+
         pollenTypesListView = findViewById(R.id.pollen_types);
         pollutantListView = findViewById(R.id.air_pollutants);
 
         //geocodeAddress(apiKey, KISTA_LOCATION);
         fetchAirQuality(apiKey, 51.500000, 0.120000, this);
         //When pollen value is 0, there is nothing in the respective part of the response
+        double LONGITUDE = 31.06549440597758;
+        double LATITUDE = 31.204389882873883;
         fetchPollen(apiKey, LATITUDE, LONGITUDE, this);
 
     }
@@ -98,7 +105,15 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         for (String allergy : allergies) {
             CheckBox checkBox = new CheckBox(this);
             checkBox.setText(allergy);
+
+            // Initialize each checkbox state as false (unchecked)
             checkBoxStates.put(allergy, false);
+
+            // Set a listener to update the state when the checkbox is checked/unchecked
+            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                checkBoxStates.put(allergy, isChecked);
+            });
+
             layout.addView(checkBox);
         }
     }
@@ -125,8 +140,20 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         return pollen;
     }
 
+    public void checkStates() {
+        for (Map.Entry<String, Boolean> entry : checkBoxStates.entrySet()) {
+            String allergy = entry.getKey();
+            Boolean isChecked = entry.getValue();
+            // Process the checked state as needed
+            if (isChecked) {
+
+            }
+        }
+    }
+
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            final int FINE_PERMISSION_CODE = 1;
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
             return;
         }
@@ -158,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }
     }
 
-    public static void geocodeAddress(String apiKey, String latlng) {
+    private static void geocodeAddress(String apiKey, String latlng) {
         new AsyncTask<Void, Void, String>() {
             protected String doInBackground(Void... voids) {
                 try {
@@ -209,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }.execute();
     }
 
-    public static void fetchAirQuality (String apiKey, double lat, double lng, MainActivity activity) {
+    private static void fetchAirQuality (String apiKey, double lat, double lng, MainActivity activity) {
         new AsyncTask<Void, Void, ArrayList<Pollutant>>() {
             protected ArrayList<Pollutant> doInBackground(Void... voids) {
 
@@ -289,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
             }
 
-            public ArrayList<Pollutant> parseExtendedAirQuality(String extendedAirQualityInfo) {
+            private ArrayList<Pollutant> parseExtendedAirQuality(String extendedAirQualityInfo) {
                 final String jsonResponse = extendedAirQualityInfo;
                 ArrayList<Pollutant> pollutants = new ArrayList<>();
 
@@ -373,11 +400,11 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }.execute();
     }
 
-    public static void fetchPollen(String apiKey, double lat, double lng, MainActivity activity) {
-        new AsyncTask<Void, Void, ArrayList<PollenType>>() {
-            protected ArrayList<PollenType> doInBackground(Void... voids) {
+    private static void fetchPollen(String apiKey, double lat, double lng, MainActivity activity) {
+        new AsyncTask<Void, Void, ArrayList<Pollen>>() {
+            protected ArrayList<Pollen> doInBackground(Void... voids) {
                 try {
-                    ArrayList<PollenType> pollenTypes;
+                    ArrayList<Pollen> pollens;
                     // Correctly set up the URL for the Geocoding API request
                     String urlString = "https://pollen.googleapis.com/v1/forecast:lookup?key="+apiKey+"&location.longitude="+lng+"&location.latitude="+lat+"&days=1";
 
@@ -421,129 +448,73 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                 return null;
             }
 
+            private ArrayList<Pollen> parsePollen(String pollenInfo) {
 
-            public ArrayList<PollenType> parsePollen(String pollenInfo) {
                 final String jsonResponse = pollenInfo;
+                ArrayList<Pollen> pollens = new ArrayList<>();
 
                 try {
+                    Log.d("parsePollen", "Starting JSON parsing.");
                     JSONObject json = new JSONObject(jsonResponse);
-
-                    String regionCode = json.getString("regionCode"); // Region Code / eller i vilket land lat/longituderna är
                     JSONArray dailyInfoArray = json.getJSONArray("dailyInfo");
-
-                    // TODO: Göra något med desiredPollenTypes såsmåningom.
-                    // Gör ingenting just nu
-                    ArrayList<String> desiredPollenTypes = new ArrayList<>();
-                    desiredPollenTypes.add("GRASS");
-                    desiredPollenTypes.add("WEED");
-                    desiredPollenTypes.add("TREE");
-
-                    ArrayList<PollenType> PollenTypes = new ArrayList<>();
-
 
                     for (int i = 0; i < dailyInfoArray.length(); i++) {
                         JSONObject dailyInfoObject = dailyInfoArray.getJSONObject(i);
-
-                        JSONObject dateObject = dailyInfoObject.getJSONObject("date"); // Dagens datum.
-                        int year = dateObject.getInt("year"); // 2023
-                        int month = dateObject.getInt("month"); // 12
-                        int day = dateObject.getInt("day"); // 5
-
-                        JSONArray pollenTypeInfoArray = dailyInfoObject.getJSONArray("pollenTypeInfo");
-
-                        Log.d("Year", year + "");
-                        Log.d("Month", month + "");
-                        Log.d("Day", day + "");
-
-                        for (int j = 0; j < pollenTypeInfoArray.length(); j++) {
-                            JSONObject pollenTypeInfoObject = pollenTypeInfoArray.getJSONObject(j);
-                            String pollenTypeCode = pollenTypeInfoObject.getString("code");
-                            String pollenTypeDisplayName = pollenTypeInfoObject.getString("displayName");
-
-                            Log.d("PollenTypeCode", pollenTypeCode + "");
-                            Log.d("PollenTypeDisplayName", pollenTypeDisplayName + "");
-
-                            // Extract additional information for each pollen type
-                            if (pollenTypeInfoObject.has("indexInfo")) {
-                                JSONObject indexInfoObject = pollenTypeInfoObject.getJSONObject("indexInfo");
-
-                                // Numrerade 1-5 beroende på "severity"
-                                int value = indexInfoObject.getInt("value");
-                                String category = indexInfoObject.getString("category");
-                                // Add more fields as needed
-
-                                Log.d("IndexValue", value + "");
-                                Log.d("IndexCategory", category + "");
-
-                                JSONArray healthRecommendationsArray = pollenTypeInfoObject.getJSONArray("healthRecommendations");
-                                String recommendation = healthRecommendationsArray.getString(i);
-                                Log.d("HealthRecommendation", recommendation);
-
-                                PollenTypes.add(new PollenType(pollenTypeDisplayName, category, recommendation));
-
-                                //healthRecommendation.add(recommendation);
-                                //nameOfPollen.add(pollenTypeDisplayName);
-                                //categoryPollen.add(category);
-                                //healthRecommendation.add(recommendation);
-
-                            }
-
-                            else{
-                                /*  TODO: Om den här biten av koden körs så
-                                    finns det ingen UPI value, alltså är det lika med 0
-                                    och är inte ett problem
-                                    Iallafall verkar det så, om jag har förstått det rätt.
-                                 */
-                                Log.d("UPI Value", "0");
-                            }
-
-                            // TODO: Process the extracted information as needed.
-                        }
-
-                        Log.d("PollenType: ", PollenTypes.get(0).toString());
-                        return PollenTypes;
-
-
-                        /* Specific plant info
                         JSONArray plantInfoArray = dailyInfoObject.getJSONArray("plantInfo");
+
                         for (int j = 0; j < plantInfoArray.length(); j++) {
+
                             JSONObject plantInfoObject = plantInfoArray.getJSONObject(j);
+                            String displayName = plantInfoObject.getString("displayName");
+                            Log.d("parsePollen", "Processing plant: " + displayName);
 
-                            String plantCode = plantInfoObject.getString("code");
-                            String plantDisplayName = plantInfoObject.getString("displayName");
+                            if (plantInfoObject.has("indexInfo")) {
+                                JSONObject indexInfoObject = plantInfoObject.getJSONObject("indexInfo");
+                                String indexValue = indexInfoObject.getString("value");
+                                String indexCategory = indexInfoObject.getString("category");
+                                String indexDescription = indexInfoObject.getString("indexDescription");
 
-                            Log.d("PlantCode", plantCode + "");
-                            Log.d("PlantDisplayName", plantDisplayName + "");
+                                Log.d("parsePollen", "Index Info - Value: " + indexValue + ", Category: " + indexCategory + ", Description: " + indexDescription);
 
-                            // Extract additional information for each plant type if needed
-                            if (plantInfoObject.has("plantDescription")) {
-                                JSONObject plantDescriptionObject = plantInfoObject.getJSONObject("plantDescription");
-                                // Extract fields as needed
+                                String season = "", crossReaction = "", type = "";
+                                if (plantInfoObject.has("plantDescription")) {
+                                    JSONObject plantDescriptionObject = plantInfoObject.getJSONObject("plantDescription");
+                                    season = plantDescriptionObject.getString("season");
+                                    crossReaction = plantDescriptionObject.getString("crossReaction");
+                                    type = plantDescriptionObject.getString("type");
 
-                                //Log.d("PlantType", plantDescriptionObject.getString("type"));
-                                //Log.d("PlantFamily", plantDescriptionObject.getString("family"));
-                                // Add more fields as needed
+                                    Log.d("parsePollen", "Plant Description - Season: " + season + ", Cross Reaction: " + crossReaction + ", Type: " + type);
+                                }
+
+                                Pollen pollen = new Pollen(displayName, indexValue, indexCategory, indexDescription, season, crossReaction, type);
+                                pollens.add(pollen);
+                            } else {
+                                Log.d("parsePollen", "No index info for plant: " + displayName);
+
+                                Pollen pollen = new Pollen(displayName, "", "", "", "", "", "");
+                                pollens.add(pollen);
                             }
 
-                            // TODO: Process the extracted information as needed.
-                        }*/
-
-
+                        }
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
+                    Log.e("parsePollen", "Error parsing JSON: " + e.getMessage());
                     return null;
                 }
-                return null;
+                Log.d("parsePollen", "Finished parsing. Total plants processed: " + pollens.size());
+                return pollens;
             }
 
-            protected void onPostExecute(ArrayList<PollenType> result) {
+            protected void onPostExecute(ArrayList<Pollen> result) {
                 if (result != null && !result.isEmpty()) {
                     // Create and set the adapter
                     activity.runOnUiThread(() -> {
                         PollenItemAdapter adapter = new PollenItemAdapter(activity, result, activity);
                         activity.pollenTypesListView.setAdapter(adapter);
+
+
+
                     });
                 }
             }
@@ -551,13 +522,13 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }.execute();
     }
 
-    public void showCardView(PollenType pollenType) {
+    public void showCardView(Pollen pollen) {
         Log.d("display card view", "true");
         CardView cardView = findViewById(R.id.recommendation_card);
         TextView tvTitle = findViewById(R.id.card_title);
-        tvTitle.setText(pollenType.getName());
+        tvTitle.setText(pollen.getDisplayName());
         TextView tvRecommendations = findViewById(R.id.information_text);
-        tvRecommendations.setText(pollenType.getHealthRecommendations());
+        tvRecommendations.setText(pollen.getIndexDescription());
 
         cardView.setVisibility(View.VISIBLE);
 
@@ -580,9 +551,10 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         tvTitle.setText(pollutant.getName());
 
         TextView tvInformation = findViewById(R.id.information_text);
-        tvInformation.setText(pollutant.getNonScientificName() + " - " + pollutant.getConcentration() +
+        final String str = pollutant.getNonScientificName() + " - " + pollutant.getConcentration() +
                 "\n\n" + "The Safe Cutoff for " + pollutant.getNonScientificName() + " is " +
-                pollutant.getSafeAmountCutoff() + "\n\n" + pollutant.getRecommendations());
+                pollutant.getSafeAmountCutoff() + "\n\n" + pollutant.getRecommendations();
+        tvInformation.setText(str);
 
         cardView.setVisibility(View.VISIBLE);
         //CardView recommendationsCard = new CardView(getContext());

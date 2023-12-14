@@ -6,17 +6,19 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/pollen_type_name"
+        android:id="@+id/pollen_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="NAME PLACEHOLDER" />
+        android:gravity="start"
+        android:text="NAME" />
 
     <TextView
         android:id="@+id/index_category"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:gravity="start"
         android:text="INDEX VALUE PLACEHOLDER"/>
 
     <Button

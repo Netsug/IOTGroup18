@@ -1,7 +1,6 @@
 package com.example.airqual;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,25 +8,19 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.cardview.widget.CardView;
-
-import com.example.airqual.PollenType;
-
-import org.w3c.dom.Text;
-
 import java.util.List;
 
-public class PollenItemAdapter extends ArrayAdapter<PollenType> {
+public class PollenItemAdapter extends ArrayAdapter<Pollen> {
 
     private OnPollenItemClickListener mListener;
-    PollenType pollenType;
+    private Pollen pollen;
 
     public interface OnPollenItemClickListener {
-        void showCardView(PollenType pollenType);
+        void showCardView(Pollen pollen);
     }
 
-    public PollenItemAdapter(Context context, List<PollenType> pollenTypes, OnPollenItemClickListener listener) {
-        super(context, 0, pollenTypes);
+    public PollenItemAdapter(Context context, List<Pollen> pollens, OnPollenItemClickListener listener) {
+        super(context, 0, pollens);
         mListener = listener;
     }
 
@@ -36,24 +29,25 @@ public class PollenItemAdapter extends ArrayAdapter<PollenType> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
-        pollenType = getItem(position);
+        pollen = getItem(position);
 
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.pollen_list_item, parent, false);
         }
 
-        TextView tvName = convertView.findViewById(R.id.pollen_type_name);
+        TextView tvName = convertView.findViewById(R.id.pollen_name);
         TextView tvCategory = convertView.findViewById(R.id.index_category);
+
         Button btnShowHealthRecommendation = convertView.findViewById(R.id.btn_recommendation);
 
-        tvName.setText(pollenType.getName());
-        tvCategory.setText(pollenType.getCategory());
+        tvName.setText(pollen.getDisplayName());
+        tvCategory.setText(pollen.getIndexCategory());
 
         btnShowHealthRecommendation.setOnClickListener(view -> {
             if (mListener != null) {
-                pollenType = getItem(position);
-                mListener.showCardView(pollenType);
+                pollen = getItem(position);
+                mListener.showCardView(pollen);
             }
 
         });

@@ -1,7 +1,6 @@
 package com.example.airqual;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,18 +8,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.cardview.widget.CardView;
-
-import com.example.airqual.PollenType;
-
-import org.w3c.dom.Text;
-
 import java.util.HashMap;
 import java.util.List;
 
 public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
 
-    private TextView tvTitle;
     private OnPollutantItemClickListener mListener;
     private Pollutant pollutant;
     private HashMap<String, String> unitConverterMap;
