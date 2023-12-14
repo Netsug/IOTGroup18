@@ -14,6 +14,7 @@ public class PollenItemAdapter extends ArrayAdapter<Pollen> {
 
     private OnPollenItemClickListener mListener;
     private Pollen pollen;
+    //TODO: remove?
 
     public interface OnPollenItemClickListener {
         void showCardView(Pollen pollen);

@@ -13,15 +13,17 @@ import com.google.android.gms.tasks.Task;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import android.Manifest;
-import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -53,9 +55,10 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     private DrawerLayout drawerLayout;
     private LinearLayout allergenSelectionDrawer;
 
-    private ListView pollenTypesListView;
+    private ListView pollenListView;
     private ListView pollutantListView;
     private PollenItemAdapter pollenItemAdapter;
+    private ArrayList<Pollen> pollens;
     private HashMap<String, Boolean> checkBoxStates = new HashMap<>();
 
     @Override
@@ -85,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
             checkStates();
         });
 
-        pollenTypesListView = findViewById(R.id.pollen_types);
+        pollenListView = findViewById(R.id.pollen_types);
         pollutantListView = findViewById(R.id.air_pollutants);
 
         //geocodeAddress(apiKey, KISTA_LOCATION);
@@ -97,17 +100,22 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
     }
 
+
     private void addAllergiesToDrawer(String title, String[] allergies, LinearLayout layout) {
         TextView tvTitle = new TextView(this);
         tvTitle.setText(title);
         layout.addView(tvTitle);
+        //TODO: only add
 
         for (String allergy : allergies) {
+            final String finalAllergy = allergy;
             CheckBox checkBox = new CheckBox(this);
             checkBox.setText(allergy);
 
             // Initialize each checkbox state as false (unchecked)
-            checkBoxStates.put(allergy, false);
+            checkBoxStates.put(finalAllergy, false);
+
+            //checkBox.setChecked(checkBoxStates.getOrDefault(allergy, false));
 
             // Set a listener to update the state when the checkbox is checked/unchecked
             checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -127,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                 "Pine",
                 "Birch",
                 "Olive",
-                "Graminales",
+                "Grasses",
                 "Ragweed",
                 "Alder",
                 "Mugwort",
@@ -141,15 +149,51 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     }
 
     public void checkStates() {
+
+        ArrayList<Pollen> checkedPollen = new ArrayList<>();
+
         for (Map.Entry<String, Boolean> entry : checkBoxStates.entrySet()) {
+            Log.d("checkbostatses", checkBoxStates.toString());
             String allergy = entry.getKey();
             Boolean isChecked = entry.getValue();
             // Process the checked state as needed
-            if (isChecked) {
-
+            for (Pollen pollen : pollens) {
+                if (pollen.getDisplayName().equals(allergy) && isChecked) {
+                    Log.d("add item", "add item");
+                    checkedPollen.add(pollen);
+                }
+                Log.d("pllen name", pollen.getDisplayName());
+                Log.d("allrgey", allergy);
             }
+            Log.d("ischecked", isChecked.toString());
         }
+        Log.d("pollens", pollens.toString());
+        Log.d("checked pollen", checkedPollen.toString());
+        pollenItemAdapter.clear();
+        //PollenItemAdapter newPollenItemAdapter = new PollenItemAdapter(this, checkedPollen, this);
+        pollenItemAdapter.addAll(checkedPollen);
+        pollenItemAdapter.notifyDataSetChanged();
+        Log.d("success?", "scuccess");
     }
+
+    /*public void checkStates() {
+        // Convert checkBoxStates to a Set of Strings representing checked allergies
+        Set<String> checkedAllergies = checkBoxStates.entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        // Filter the pollens list to include only those whose displayName is in checkedAllergies
+        List<Pollen> checkedPollen = pollens.stream()
+                .filter(pollen -> checkedAllergies.contains(pollen.getDisplayName()))
+                .collect(Collectors.toList());
+
+        // Update the adapter with the new list
+        pollenItemAdapter.clear();
+        pollenItemAdapter.addAll(checkedPollen);
+        pollenItemAdapter.notifyDataSetChanged();
+    }*/
+
 
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -400,11 +444,11 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }.execute();
     }
 
-    private static void fetchPollen(String apiKey, double lat, double lng, MainActivity activity) {
+    public static void fetchPollen(String apiKey, double lat, double lng, MainActivity activity) {
         new AsyncTask<Void, Void, ArrayList<Pollen>>() {
             protected ArrayList<Pollen> doInBackground(Void... voids) {
                 try {
-                    ArrayList<Pollen> pollens;
+                    //ArrayList<Pollen> pollens;
                     // Correctly set up the URL for the Geocoding API request
                     String urlString = "https://pollen.googleapis.com/v1/forecast:lookup?key="+apiKey+"&location.longitude="+lng+"&location.latitude="+lat+"&days=1";
 
@@ -451,7 +495,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
             private ArrayList<Pollen> parsePollen(String pollenInfo) {
 
                 final String jsonResponse = pollenInfo;
-                ArrayList<Pollen> pollens = new ArrayList<>();
+                ArrayList<Pollen> firstPollens = new ArrayList<>();
 
                 try {
                     Log.d("parsePollen", "Starting JSON parsing.");
@@ -487,12 +531,12 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                                 }
 
                                 Pollen pollen = new Pollen(displayName, indexValue, indexCategory, indexDescription, season, crossReaction, type);
-                                pollens.add(pollen);
+                                firstPollens.add(pollen);
                             } else {
                                 Log.d("parsePollen", "No index info for plant: " + displayName);
 
                                 Pollen pollen = new Pollen(displayName, "", "", "", "", "", "");
-                                pollens.add(pollen);
+                                firstPollens.add(pollen);
                             }
 
                         }
@@ -502,19 +546,17 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                     Log.e("parsePollen", "Error parsing JSON: " + e.getMessage());
                     return null;
                 }
-                Log.d("parsePollen", "Finished parsing. Total plants processed: " + pollens.size());
-                return pollens;
+                Log.d("parsePollen", "Finished parsing. Total plants processed: " + firstPollens.size());
+                return firstPollens;
             }
 
             protected void onPostExecute(ArrayList<Pollen> result) {
                 if (result != null && !result.isEmpty()) {
                     // Create and set the adapter
                     activity.runOnUiThread(() -> {
-                        PollenItemAdapter adapter = new PollenItemAdapter(activity, result, activity);
-                        activity.pollenTypesListView.setAdapter(adapter);
-
-
-
+                        activity.pollens = result;
+                        activity.pollenItemAdapter = new PollenItemAdapter(activity, result, activity);
+                        activity.pollenListView.setAdapter(activity.pollenItemAdapter);
                     });
                 }
             }
