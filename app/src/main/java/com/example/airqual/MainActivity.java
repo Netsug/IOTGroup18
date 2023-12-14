@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import android.Manifest;
+import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -58,6 +59,11 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         String apiKey = getString(R.string.api_key);
 
         buttonHamburger = findViewById(R.id.btn_hamburger);
+        buttonHamburger.setOnClickListener(view -> {
+
+        });
+
+
         pollenTypesListView = findViewById(R.id.pollen_types);
         pollutantListView = findViewById(R.id.air_pollutants);
 

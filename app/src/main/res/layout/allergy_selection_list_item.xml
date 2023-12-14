@@ -9,5 +9,6 @@
         android:id="@+id/checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Allergen" /> <!-- placeholder, each allergy will be dynamically set by recyclerviewadapter, remove later-->
+        android:text="PLACEHOLDER" />
 </LinearLayout>
+    <!-- placeholder, each allergy will be dynamically set by recyclerviewadapter, remove later-->
