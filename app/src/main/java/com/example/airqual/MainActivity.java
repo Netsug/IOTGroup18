@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -16,6 +17,7 @@ import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.Manifest;
 import android.content.Intent;
@@ -27,7 +29,9 @@ import android.util.Log;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,10 +51,12 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     private final int FINE_PERMISSION_CODE = 1;
     private Location currentLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    private DrawerLayout drawerLayout;
+    private LinearLayout allergenSelectionDrawer;
 
-    private ImageButton buttonHamburger;
     private ListView pollenTypesListView;
     private ListView pollutantListView;
+    private HashMap<String, Boolean> checkBoxStates = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,11 +64,21 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         setContentView(R.layout.activity_main);
         String apiKey = getString(R.string.api_key);
 
-        buttonHamburger = findViewById(R.id.btn_hamburger);
-        buttonHamburger.setOnClickListener(view -> {
+        drawerLayout = findViewById(R.id.drawer_layout);
+        allergenSelectionDrawer = findViewById(R.id.allergen_drawer);
+        LinearLayout allergenList = findViewById(R.id.allergen_list);
 
+        addAllergiesToDrawer("Please select your pollen allergies", getPollen(), allergenList);
+
+        ImageButton buttonOpenDrawer = findViewById(R.id.btn_hamburger);
+        buttonOpenDrawer.setOnClickListener(view -> {
+            drawerLayout.openDrawer(allergenSelectionDrawer);
         });
 
+        ImageButton buttonCloseDrawer = findViewById(R.id.btn_x_icon);
+        buttonCloseDrawer.setOnClickListener(view -> {
+            drawerLayout.closeDrawer(allergenSelectionDrawer);
+        });
 
         pollenTypesListView = findViewById(R.id.pollen_types);
         pollutantListView = findViewById(R.id.air_pollutants);
@@ -74,6 +90,35 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
     }
 
+    private void addAllergiesToDrawer(String title, String[] allergies, LinearLayout layout) {
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText(title);
+        layout.addView(tvTitle);
+
+        for (String allergy : allergies) {
+            CheckBox checkBox = new CheckBox(this);
+            checkBox.setText(allergy);
+            checkBoxStates.put(allergy, false);
+            layout.addView(checkBox);
+        }
+    }
+
+    private String[] getPollen() {
+        String[] pollen = {
+                "Hazel",
+                "Ash",
+                "Cottonwood",
+                "Oak",
+                "Pine",
+                "Birch",
+                "Olive",
+                "Grasses",
+                "Ragweed",
+                "Alder",
+                "Mugwort"
+        };
+        return pollen;
+    }
 
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -530,20 +575,19 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         tvTitle.setText(pollutant.getName());
 
         TextView tvInformation = findViewById(R.id.information_text);
-        tvInformation.setText(pollutant.getRecommendations());
+        tvInformation.setText(pollutant.getNonScientificName() + " - " + pollutant.getConcentration() +
+                "\n\n" + "The Safe Cutoff for " + pollutant.getNonScientificName() + " is " +
+                pollutant.getSafeAmountCutoff() + "\n\n" + pollutant.getRecommendations());
 
         cardView.setVisibility(View.VISIBLE);
         //CardView recommendationsCard = new CardView(getContext());
 
         ImageButton buttonDismiss = findViewById(R.id.btn_dismiss_card);
 
-        buttonDismiss.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Set the CardView's visibility to GONE or INVISIBLE
-                cardView.setVisibility(View.GONE); // or View.INVISIBLE
-                Log.d("Click" , pollutant.getName()+ "");
-            }
+        buttonDismiss.setOnClickListener(view -> {
+            // Set the CardView's visibility to GONE or INVISIBLE
+            cardView.setVisibility(View.GONE); // or View.INVISIBLE
+            Log.d("Click" , pollutant.getName()+ "");
         });
     }
 

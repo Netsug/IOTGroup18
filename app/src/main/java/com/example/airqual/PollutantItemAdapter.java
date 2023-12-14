@@ -23,7 +23,6 @@ public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
     private TextView tvTitle;
     private OnPollutantItemClickListener mListener;
     private Pollutant pollutant;
-
     private HashMap<String, String> unitConverterMap;
 
     public interface OnPollutantItemClickListener {
@@ -55,9 +54,10 @@ public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
         ////////
 
         final char micro = '\u00B5';
+        final char cubed = '\u00B3';
 
         unitConverterMap.put("PARTS_PER_BILLION", "ppb");
-        unitConverterMap.put("MICROGRAMS_PER_CUBIC_METER", micro + "g/m^3");
+        unitConverterMap.put("MICROGRAMS_PER_CUBIC_METER", micro + "g/m" + cubed);
 
         for (String key : unitConverterMap.keySet()){
             if (key.equals(pollutant.getConcentrationUnit())){
