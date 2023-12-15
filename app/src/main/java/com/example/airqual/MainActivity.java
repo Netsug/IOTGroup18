@@ -552,17 +552,19 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         TextView tvRecommendations = findViewById(R.id.information_text);
 
+        String season = "";
+        String cross = "";
 
-        if(pollen.getSeason().equals("")){
-
+        if (!pollen.getSeason().equals("")) {
+            season = "Is in season during " + pollen.getSeason().toLowerCase() + ".";
         }
 
+        if (!pollen.getCrossReaction().equals("")) {
+            cross = "Some cross reactions include " + pollen.getCrossReaction();
+        }
 
-        final String str = 
-                  pollen.getIndexDescription() + "\n\n"
-                + pollen.getHealthRecommendation() + "\n\n"
-                + pollen.getSeason() + "\n\n"
-                + pollen.getCrossReaction() + "\n\n";
+        final String str = pollen.getIndexDescription() + "." + "\n\n" + pollen.getHealthRecommendation() + "\n\n" + season + "\n\n" + cross;
+
         tvRecommendations.setText(str);
 
 

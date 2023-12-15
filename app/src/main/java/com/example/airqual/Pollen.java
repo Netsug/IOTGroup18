@@ -42,7 +42,7 @@ public class Pollen {
             default:
                 this.healthRecommendation = "Enjoy the outdoors!";
                 this.indexCategory = "None";
-                this.indexDescription = "There is no measurable amount of this pollen in the air.";
+                this.indexDescription = "There is no measurable amount of this pollen in the air";
                 this.season = "";
                 this.crossReaction = "";
                 this.type = "";
