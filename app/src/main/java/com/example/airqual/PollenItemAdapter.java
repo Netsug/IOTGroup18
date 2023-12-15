@@ -12,12 +12,11 @@ import java.util.List;
 
 public class PollenItemAdapter extends ArrayAdapter<Pollen> {
 
-    private OnPollenItemClickListener mListener;
+    private final OnPollenItemClickListener mListener;
     private Pollen pollen;
-    //TODO: remove?
 
     public interface OnPollenItemClickListener {
-        void showCardView(Pollen pollen);
+        void showPollenCardView(Pollen pollen);
     }
 
     public PollenItemAdapter(Context context, List<Pollen> pollens, OnPollenItemClickListener listener) {
@@ -48,7 +47,7 @@ public class PollenItemAdapter extends ArrayAdapter<Pollen> {
         btnShowHealthRecommendation.setOnClickListener(view -> {
             if (mListener != null) {
                 pollen = getItem(position);
-                mListener.showCardView(pollen);
+                mListener.showPollenCardView(pollen);
             }
 
         });

@@ -3,18 +3,14 @@ package com.example.airqual;
 import java.util.HashMap;
 
 public class Pollutant {
-    private String name;
-    private double concentrationValue;
-    private String concentrationUnit;
+    private final String name;
+    private final double concentrationValue;
+    private final String concentrationUnit;
     private String concentration;
     private String nonScientificName;
 
     private String safeAmountCutoff;
-    private String recommendations;
-
-    private HashMap<String, String> unitConverterMap;
-    private HashMap<String, String> safeAmountCutoffMap;
-    private HashMap<String ,String> nonScientificNameMap;
+    private final String recommendations;
 
     final char micro = '\u00B5';
     final char cubed = '\u00B3';
@@ -22,9 +18,9 @@ public class Pollutant {
 
     public Pollutant(String name, double concentrationValue, String concentrationUnit, String rec) {
 
-        unitConverterMap = new HashMap<>();
-        nonScientificNameMap = new HashMap<>();
-        safeAmountCutoffMap = new HashMap<>();
+        HashMap<String, String> unitConverterMap = new HashMap<>();
+        HashMap<String, String> nonScientificNameMap = new HashMap<>();
+        HashMap<String, String> safeAmountCutoffMap = new HashMap<>();
 
         this.name = name;
         this.concentrationValue = concentrationValue;

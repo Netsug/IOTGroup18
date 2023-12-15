@@ -1,5 +1,6 @@
 package com.example.airqual;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,9 +14,9 @@ import java.util.List;
 
 public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
 
-    private OnPollutantItemClickListener mListener;
+    private final OnPollutantItemClickListener mListener;
     private Pollutant pollutant;
-    private HashMap<String, String> unitConverterMap;
+    private final HashMap<String, String> unitConverterMap;
 
     public interface OnPollutantItemClickListener {
         void showPollutantCardView(Pollutant pollutant);
@@ -27,6 +28,7 @@ public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
         unitConverterMap = new HashMap<>();
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
@@ -59,15 +61,12 @@ public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
         }
 
         ////////
-        btnShowInfo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mListener != null) {
-                    // Get the data item for this position
-                    pollutant = getItem(position);
+        btnShowInfo.setOnClickListener(view -> {
+            if (mListener != null) {
+                // Get the data item for this position
+                pollutant = getItem(position);
 
-                    mListener.showPollutantCardView(pollutant);
-                }
+                mListener.showPollutantCardView(pollutant);
             }
         });
 

@@ -7,7 +7,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.io.BufferedReader;
@@ -15,13 +14,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import android.Manifest;
 import android.location.Location;
@@ -59,7 +56,9 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     private ListView pollutantListView;
     private PollenItemAdapter pollenItemAdapter;
     private ArrayList<Pollen> pollens;
-    private HashMap<String, Boolean> checkBoxStates = new HashMap<>();
+
+    private final HashMap<String, Boolean> checkBoxStates = new HashMap<>();
+    private String jsonString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,22 +70,16 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         allergenSelectionDrawer = findViewById(R.id.allergen_drawer);
         LinearLayout allergenList = findViewById(R.id.allergen_list);
 
-        addAllergiesToDrawer("Please select your pollen allergies", getPollen(), allergenList);
+        addAllergiesToDrawer(getPollen(), allergenList);
 
         ImageButton buttonOpenDrawer = findViewById(R.id.btn_hamburger);
-        buttonOpenDrawer.setOnClickListener(view -> {
-            drawerLayout.openDrawer(allergenSelectionDrawer);
-        });
+        buttonOpenDrawer.setOnClickListener(view -> drawerLayout.openDrawer(allergenSelectionDrawer));
 
         ImageButton buttonCloseDrawer = findViewById(R.id.btn_x_icon);
-        buttonCloseDrawer.setOnClickListener(view -> {
-            drawerLayout.closeDrawer(allergenSelectionDrawer);
-        });
+        buttonCloseDrawer.setOnClickListener(view -> drawerLayout.closeDrawer(allergenSelectionDrawer));
 
         Button saveButton = findViewById(R.id.btn_save);
-        saveButton.setOnClickListener(view -> {
-            checkStates();
-        });
+        saveButton.setOnClickListener(view -> checkStates());
 
         pollenListView = findViewById(R.id.pollen_types);
         pollutantListView = findViewById(R.id.air_pollutants);
@@ -101,11 +94,11 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     }
 
 
-    private void addAllergiesToDrawer(String title, String[] allergies, LinearLayout layout) {
+    private void addAllergiesToDrawer(String[] allergies, LinearLayout layout) {
         TextView tvTitle = new TextView(this);
-        tvTitle.setText(title);
+        tvTitle.setText("Please select your allergies, friend");
         layout.addView(tvTitle);
-        //TODO: only add
+        //TODO: add allergies not included in response, saying "none"
 
         for (String allergy : allergies) {
             final String finalAllergy = allergy;
@@ -115,19 +108,16 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
             // Initialize each checkbox state as false (unchecked)
             checkBoxStates.put(finalAllergy, false);
 
-            //checkBox.setChecked(checkBoxStates.getOrDefault(allergy, false));
-
             // Set a listener to update the state when the checkbox is checked/unchecked
-            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                checkBoxStates.put(allergy, isChecked);
-            });
+            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> checkBoxStates.put(allergy, isChecked));
 
             layout.addView(checkBox);
         }
     }
 
     private static String[] getPollen() {
-        String[] pollen = {
+
+        return new String[]{
                 "Hazel",
                 "Ash",
                 "Cottonwood",
@@ -144,56 +134,31 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                 "Juniper",
                 "Cypress pine"
         };
-
-        return pollen;
     }
 
-    public void checkStates() {
+    private void checkStates() {
 
         ArrayList<Pollen> checkedPollen = new ArrayList<>();
 
         for (Map.Entry<String, Boolean> entry : checkBoxStates.entrySet()) {
-            Log.d("checkbostatses", checkBoxStates.toString());
             String allergy = entry.getKey();
             Boolean isChecked = entry.getValue();
-            // Process the checked state as needed
+
             for (Pollen pollen : pollens) {
                 if (pollen.getDisplayName().equals(allergy) && isChecked) {
-                    Log.d("add item", "add item");
                     checkedPollen.add(pollen);
                 }
-                Log.d("pllen name", pollen.getDisplayName());
-                Log.d("allrgey", allergy);
             }
-            Log.d("ischecked", isChecked.toString());
+
         }
-        Log.d("pollens", pollens.toString());
-        Log.d("checked pollen", checkedPollen.toString());
+
         pollenItemAdapter.clear();
-        //PollenItemAdapter newPollenItemAdapter = new PollenItemAdapter(this, checkedPollen, this);
         pollenItemAdapter.addAll(checkedPollen);
         pollenItemAdapter.notifyDataSetChanged();
-        Log.d("success?", "scuccess");
+
+        pollens = parseAllPollen();
+
     }
-
-    /*public void checkStates() {
-        // Convert checkBoxStates to a Set of Strings representing checked allergies
-        Set<String> checkedAllergies = checkBoxStates.entrySet().stream()
-                .filter(Map.Entry::getValue)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
-
-        // Filter the pollens list to include only those whose displayName is in checkedAllergies
-        List<Pollen> checkedPollen = pollens.stream()
-                .filter(pollen -> checkedAllergies.contains(pollen.getDisplayName()))
-                .collect(Collectors.toList());
-
-        // Update the adapter with the new list
-        pollenItemAdapter.clear();
-        pollenItemAdapter.addAll(checkedPollen);
-        pollenItemAdapter.notifyDataSetChanged();
-    }*/
-
 
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -202,19 +167,16 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
             return;
         }
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                if (location != null) {
-                    currentLocation = location;
+        task.addOnSuccessListener(location -> {
+            if (location != null) {
+                currentLocation = location;
 
-                    Log.d("Lat1", "" + currentLocation.getLatitude());
-                    Log.d("Long1", "" + currentLocation.getLongitude());
+                Log.d("Lat1", "" + currentLocation.getLatitude());
+                Log.d("Long1", "" + currentLocation.getLongitude());
 
-                }
-                else{
-                    Log.d("1455423", "1453");
-                }
+            }
+            else{
+                Log.d("1455423", "1453");
             }
         });
     }
@@ -288,20 +250,13 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                     // Set up the URL for the Geocoding API request
                     final String urlString = "https://airquality.googleapis.com/v1/currentConditions:lookup?key=" + apiKey;
 
-                    // Create a URL object
                     URL url = new URL(urlString);
-
-                    // Open a connection to the URL
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-                    // Set the request method to POST
                     connection.setRequestMethod("POST");
-
-                    // Set request headers
                     connection.setRequestProperty("Content-Type", "application/json");
                     connection.setRequestProperty("Accept", "application/json");
 
-                    // Enable input/output streams
                     connection.setDoOutput(true);
                     connection.setDoInput(true);
 
@@ -322,20 +277,18 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                             "}";
 
                     // The JSON-request
-                    // Log.d("Request JSON", jsonInputString);
 
                     // Send JSON data in the request body
                     try (OutputStream os = connection.getOutputStream()) {
-                        byte[] input = jsonInputString.getBytes("utf-8");
+                        byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
                         os.write(input, 0, input.length);
                     }
 
-                    // Get the response code
                     int responseCode = connection.getResponseCode();
 
                     // Read the response from the API
                     if (responseCode == HttpURLConnection.HTTP_OK) {
-                        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"))) {
+                        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
                             StringBuilder response = new StringBuilder();
                             String responseLine;
                             while ((responseLine = br.readLine()) != null) {
@@ -350,14 +303,13 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                         Log.d("API Request Failed", "Air Quality API request failed with status code: " + responseCode);
                     }
 
-                    // Disconnect the connection
                     connection.disconnect();
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                return null;
 
+                return null;
             }
 
             private ArrayList<Pollutant> parseExtendedAirQuality(String extendedAirQualityInfo) {
@@ -370,8 +322,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                     String dateTime = json.getString("dateTime");
                     String regionCode = json.getString("regionCode");
 
-                    Log.d("DateTime", dateTime);
-                    Log.d("RegionCode", regionCode);
 
                     JSONArray indexesArray = json.getJSONArray("indexes");
 
@@ -385,12 +335,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                         String category = indexObject.getString("category");
                         String dominantPollutant = indexObject.getString("dominantPollutant");
 
-                        Log.d("IndexCode", indexCode);
-                        Log.d("IndexDisplayName", indexDisplayName);
-                        Log.d("AQI", String.valueOf(aqi));
-                        Log.d("AQIDisplay", aqiDisplay);
-                        Log.d("Category", category);
-                        Log.d("DominantPollutant", dominantPollutant);
 
                         // TODO: PASS INT TO TITLE: AQI ONLY
 
@@ -409,14 +353,8 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                         double concentrationValue = concentrationObject.getDouble("value");
                         String concentrationUnits = concentrationObject.getString("units");
 
-                        Log.d("PollutantCode", pollutantCode);
-                        Log.d("PollutantDisplayName", pollutantDisplayName);
-                        Log.d("PollutantFullName", pollutantFullName);
-                        Log.d("ConcentrationValue", String.valueOf(concentrationValue));
-                        Log.d("ConcentrationUnits", concentrationUnits);
 
                         JSONObject healthRecommendationsObject = json.getJSONObject("healthRecommendations");
-                        Log.d("GeneralPopulation", healthRecommendationsObject.getString("generalPopulation"));
 
                         Pollutant pollutant = new Pollutant(pollutantDisplayName, concentrationValue, concentrationUnits, healthRecommendationsObject.getString("generalPopulation"));
                         pollutants.add(pollutant);
@@ -448,7 +386,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         new AsyncTask<Void, Void, ArrayList<Pollen>>() {
             protected ArrayList<Pollen> doInBackground(Void... voids) {
                 try {
-                    //ArrayList<Pollen> pollens;
                     // Correctly set up the URL for the Geocoding API request
                     String urlString = "https://pollen.googleapis.com/v1/forecast:lookup?key="+apiKey+"&location.longitude="+lng+"&location.latitude="+lat+"&days=1";
 
@@ -479,10 +416,11 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
                     // Check if the request was successful (status code 200)
                     if (responseCode == 200) {
-                        String jsonString = response.toString();
 
-                        Log.d("jsonString response", jsonString);
-                        return parsePollen(jsonString);
+                        activity.jsonString = response.toString();
+
+                        return activity.parseAllPollen();
+
                     } else {
                         Log.d("Not successful, bad response code", "Pollen request failed with response code: " + responseCode);
                     }
@@ -490,64 +428,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                     e.printStackTrace();
                 }
                 return null;
-            }
-
-            private ArrayList<Pollen> parsePollen(String pollenInfo) {
-
-                final String jsonResponse = pollenInfo;
-                ArrayList<Pollen> firstPollens = new ArrayList<>();
-
-                try {
-                    Log.d("parsePollen", "Starting JSON parsing.");
-                    JSONObject json = new JSONObject(jsonResponse);
-                    JSONArray dailyInfoArray = json.getJSONArray("dailyInfo");
-
-                    for (int i = 0; i < dailyInfoArray.length(); i++) {
-                        JSONObject dailyInfoObject = dailyInfoArray.getJSONObject(i);
-                        JSONArray plantInfoArray = dailyInfoObject.getJSONArray("plantInfo");
-
-                        for (int j = 0; j < plantInfoArray.length(); j++) {
-
-                            JSONObject plantInfoObject = plantInfoArray.getJSONObject(j);
-                            String displayName = plantInfoObject.getString("displayName");
-                            Log.d("parsePollen", "Processing plant: " + displayName);
-
-                            if (plantInfoObject.has("indexInfo")) {
-                                JSONObject indexInfoObject = plantInfoObject.getJSONObject("indexInfo");
-                                String indexValue = indexInfoObject.getString("value");
-                                String indexCategory = indexInfoObject.getString("category");
-                                String indexDescription = indexInfoObject.getString("indexDescription");
-
-                                Log.d("parsePollen", "Index Info - Value: " + indexValue + ", Category: " + indexCategory + ", Description: " + indexDescription);
-
-                                String season = "", crossReaction = "", type = "";
-                                if (plantInfoObject.has("plantDescription")) {
-                                    JSONObject plantDescriptionObject = plantInfoObject.getJSONObject("plantDescription");
-                                    season = plantDescriptionObject.getString("season");
-                                    crossReaction = plantDescriptionObject.getString("crossReaction");
-                                    type = plantDescriptionObject.getString("type");
-
-                                    Log.d("parsePollen", "Plant Description - Season: " + season + ", Cross Reaction: " + crossReaction + ", Type: " + type);
-                                }
-
-                                Pollen pollen = new Pollen(displayName, indexValue, indexCategory, indexDescription, season, crossReaction, type);
-                                firstPollens.add(pollen);
-                            } else {
-                                Log.d("parsePollen", "No index info for plant: " + displayName);
-
-                                Pollen pollen = new Pollen(displayName, "", "", "", "", "", "");
-                                firstPollens.add(pollen);
-                            }
-
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e("parsePollen", "Error parsing JSON: " + e.getMessage());
-                    return null;
-                }
-                Log.d("parsePollen", "Finished parsing. Total plants processed: " + firstPollens.size());
-                return firstPollens;
             }
 
             protected void onPostExecute(ArrayList<Pollen> result) {
@@ -564,25 +444,134 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }.execute();
     }
 
-    public void showCardView(Pollen pollen) {
-        Log.d("display card view", "true");
+    private ArrayList<Pollen> parseAllPollen() {
+        ArrayList<Pollen> pollenResponse = parsePollen(jsonString);
+        final String[] pollenStringArray = getPollen();
+        ArrayList<Pollen> newPollenList = new ArrayList<>();
+
+        for (int i = 0; i < getPollen().length; i++) {
+
+            Pollen newPollen = null;
+            boolean found = false;
+
+            for (int j = 0; j < Objects.requireNonNull(pollenResponse).size(); j++) {
+
+                if (pollenResponse.get(j).getDisplayName().equals(pollenStringArray[i])) {
+                    found = true;
+                    newPollenList.add(pollenResponse.get(j)); //Adds existing pollen to new list
+                    break;
+                }
+
+            }
+
+            if (!found) {
+                Log.d("f", "found");
+
+                // adds nonexisting pollens to new list
+                newPollen = new Pollen(pollenStringArray[i], "0", "", "", "", "", "");
+            }
+
+
+            if (newPollen != null) {
+                newPollenList.add(newPollen);
+            }
+
+        }
+
+        assert pollenResponse != null;
+        pollenResponse.clear();
+        pollenResponse.addAll(newPollenList);
+
+        return pollenResponse;
+    }
+
+    private ArrayList<Pollen> parsePollen(String pollenInfo) {
+
+        final String jsonResponse = pollenInfo;
+        ArrayList<Pollen> firstPollens = new ArrayList<>();
+
+        try {
+            Log.d("parsePollen", "Starting JSON parsing.");
+            JSONObject json = new JSONObject(jsonResponse);
+            JSONArray dailyInfoArray = json.getJSONArray("dailyInfo");
+
+            for (int i = 0; i < dailyInfoArray.length(); i++) {
+                JSONObject dailyInfoObject = dailyInfoArray.getJSONObject(i);
+                JSONArray plantInfoArray = dailyInfoObject.getJSONArray("plantInfo");
+
+                for (int j = 0; j < plantInfoArray.length(); j++) {
+
+                    JSONObject plantInfoObject = plantInfoArray.getJSONObject(j);
+                    String displayName = plantInfoObject.getString("displayName");
+                    Log.d("parsePollen", "Processing plant: " + displayName);
+
+                    if (plantInfoObject.has("indexInfo")) {
+                        JSONObject indexInfoObject = plantInfoObject.getJSONObject("indexInfo");
+                        String indexValue = indexInfoObject.getString("value");
+                        String indexCategory = indexInfoObject.getString("category");
+                        String indexDescription = indexInfoObject.getString("indexDescription");
+
+                        Log.d("parsePollen", "Index Info - Value: " + indexValue + ", Category: " + indexCategory + ", Description: " + indexDescription);
+
+                        String season = "", crossReaction = "", type = "";
+                        if (plantInfoObject.has("plantDescription")) {
+                            JSONObject plantDescriptionObject = plantInfoObject.getJSONObject("plantDescription");
+                            season = plantDescriptionObject.getString("season");
+                            crossReaction = plantDescriptionObject.getString("crossReaction");
+                            type = plantDescriptionObject.getString("type");
+
+                            Log.d("parsePollen", "Plant Description - Season: " + season + ", Cross Reaction: " + crossReaction + ", Type: " + type);
+                        }
+
+                        Pollen pollen = new Pollen(displayName, indexValue, indexCategory, indexDescription, season, crossReaction, type);
+                        firstPollens.add(pollen);
+                    } else {
+                        Log.d("parsePollen", "No index info for plant: " + displayName);
+
+                        Pollen pollen = new Pollen(displayName, "", "", "", "", "", "");
+                        firstPollens.add(pollen);
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("parsePollen", "Error parsing JSON: " + e.getMessage());
+            return null;
+        }
+        Log.d("parsePollen", "Finished parsing. Total plants processed: " + firstPollens.size());
+        return firstPollens;
+    }
+
+    public void showPollenCardView(Pollen pollen) {
+
         CardView cardView = findViewById(R.id.recommendation_card);
+
         TextView tvTitle = findViewById(R.id.card_title);
         tvTitle.setText(pollen.getDisplayName());
+
         TextView tvRecommendations = findViewById(R.id.information_text);
-        tvRecommendations.setText(pollen.getIndexDescription());
+
+
+        if(pollen.getSeason().equals("")){
+
+        }
+
+
+        final String str = 
+                  pollen.getIndexDescription() + "\n\n"
+                + pollen.getHealthRecommendation() + "\n\n"
+                + pollen.getSeason() + "\n\n"
+                + pollen.getCrossReaction() + "\n\n";
+        tvRecommendations.setText(str);
+
+
+
 
         cardView.setVisibility(View.VISIBLE);
 
         ImageButton buttonDismiss = findViewById(R.id.btn_dismiss_card);
-
-        buttonDismiss.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Set the CardView's visibility to GONE or INVISIBLE
-                cardView.setVisibility(View.GONE); // or View.INVISIBLE
-            }
-        });
+        buttonDismiss.setOnClickListener(view -> cardView.setVisibility(View.GONE));
     }
 
     public void showPollutantCardView(Pollutant pollutant) {
@@ -599,14 +588,12 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         tvInformation.setText(str);
 
         cardView.setVisibility(View.VISIBLE);
-        //CardView recommendationsCard = new CardView(getContext());
 
         ImageButton buttonDismiss = findViewById(R.id.btn_dismiss_card);
 
         buttonDismiss.setOnClickListener(view -> {
             // Set the CardView's visibility to GONE or INVISIBLE
             cardView.setVisibility(View.GONE); // or View.INVISIBLE
-            Log.d("Click" , pollutant.getName()+ "");
         });
     }
 
