@@ -51,8 +51,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     private static final int MIN_TIME = 1000; // Minimum time interval between location updates in milliseconds
     private static final int MIN_DISTANCE = 10; // Minimum distance between location updates in meters
 
-    private Location currentLocation;
-    private FusedLocationProviderClient fusedLocationProviderClient;
     private DrawerLayout drawerLayout;
     private LinearLayout allergenSelectionDrawer;
 
@@ -73,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String apiKey = getString(R.string.api_key);
         tvLocation = findViewById(R.id.location_text);
 
         checkLocationPermissions();
@@ -98,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         Button airQualityRecsButton = findViewById(R.id.btn_pollutant_recommendation);
         airQualityRecsButton.setOnClickListener(view -> buildTotal());
-
     }
 
     private double addDecimals(double input) {
@@ -246,8 +242,8 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }
     }
 
+    // TODO: Make to just a string array
     private static String[] getPollen() {
-
         return new String[]{
                 "Hazel",
                 "Ash",
@@ -289,26 +285,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         pollens = parseAllPollen();
 
-    }
-
-    private void getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            final int FINE_PERMISSION_CODE = 1;
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
-            return;
-        }
-        Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(location -> {
-            if (location != null) {
-                currentLocation = location;
-
-                Log.d("Lat1", "" + currentLocation.getLatitude());
-                Log.d("Long1", "" + currentLocation.getLongitude());
-
-            } else {
-                Log.d("1455423", "1453");
-            }
-        });
     }
 
     @Override
@@ -622,6 +598,36 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         }.execute();
     }
 
+    private ArrayList<String> parseCityGeolocation(String jsonResponse) throws JSONException {
+
+        ArrayList<String> str = new ArrayList<>();
+
+        JSONObject responseObject = new JSONObject(jsonResponse);
+
+        // Access the 'results' JSON array
+        JSONArray resultsArray = responseObject.getJSONArray("results");
+
+        // Loop through each result
+        for (int i = 0; i < resultsArray.length(); i++) {
+            JSONObject result = resultsArray.getJSONObject(i);
+
+            // Extract 'address_components' JSON array
+            JSONArray addressComponents = result.getJSONArray("address_components");
+
+            // Check each address component for 'Warraq Al Arab'
+            for (int j = 0; j < addressComponents.length(); j++) {
+                JSONObject addressComponent = addressComponents.getJSONObject(j);
+                String longName = addressComponent.getString("long_name");
+
+                str.add(longName);
+            }
+
+        }
+
+
+        return str;
+    }
+
     private ArrayList<Pollen> parseAllPollen() {
         ArrayList<Pollen> pollenResponse = parsePollen(jsonString);
         final String[] pollenStringArray = getPollen();
@@ -663,35 +669,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         return pollenResponse;
     }
 
-    private ArrayList<String> parseCityGeolocation(String jsonResponse) throws JSONException {
-
-        ArrayList<String> str = new ArrayList<>();
-
-        JSONObject responseObject = new JSONObject(jsonResponse);
-
-        // Access the 'results' JSON array
-        JSONArray resultsArray = responseObject.getJSONArray("results");
-
-        // Loop through each result
-        for (int i = 0; i < resultsArray.length(); i++) {
-            JSONObject result = resultsArray.getJSONObject(i);
-
-            // Extract 'address_components' JSON array
-            JSONArray addressComponents = result.getJSONArray("address_components");
-
-            // Check each address component for 'Warraq Al Arab'
-            for (int j = 0; j < addressComponents.length(); j++) {
-                JSONObject addressComponent = addressComponents.getJSONObject(j);
-                String longName = addressComponent.getString("long_name");
-
-                str.add(longName);
-            }
-
-        }
-
-
-        return str;
-    }
 
     private ArrayList<Pollen> parsePollen(String pollenInfo) {
 
@@ -700,6 +677,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         try {
             Log.d("parsePollen", "Starting JSON parsing.");
+
             JSONObject json = new JSONObject(jsonResponse);
             JSONArray dailyInfoArray = json.getJSONArray("dailyInfo");
 
@@ -711,6 +689,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
                     JSONObject plantInfoObject = plantInfoArray.getJSONObject(j);
                     String displayName = plantInfoObject.getString("displayName");
+
                     Log.d("parsePollen", "Processing plant: " + displayName);
 
                     if (plantInfoObject.has("indexInfo")) {
@@ -741,13 +720,19 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                     }
 
                 }
+
             }
+
         } catch (Exception e) {
             e.printStackTrace();
+
             Log.e("parsePollen", "Error parsing JSON: " + e.getMessage());
+
             return null;
         }
+
         Log.d("parsePollen", "Finished parsing. Total plants processed: " + firstPollens.size());
+
         return firstPollens;
     }
 

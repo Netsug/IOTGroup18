@@ -4,7 +4,6 @@ import android.util.Log;
 
 public class Pollen {
 
-    // Fields
     private final String displayName;
     private final String indexValue;
     private String indexCategory;
@@ -13,7 +12,7 @@ public class Pollen {
     private String crossReaction;
     private String type;
     private String healthRecommendation;
-    // Constructor
+
     public Pollen(String displayName, String indexValue, String indexCategory, String indexDescription, String season, String crossReaction, String type) {
         this.displayName = displayName;
         this.indexValue = indexValue;
@@ -52,7 +51,6 @@ public class Pollen {
 
     }
 
-    // Getter methods
     public String getDisplayName() {
         return displayName;
     }
