@@ -1,6 +1,5 @@
 package com.example.airqual;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AirQualityIndex {

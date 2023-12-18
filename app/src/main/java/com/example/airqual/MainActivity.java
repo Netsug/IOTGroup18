@@ -1,5 +1,22 @@
 package com.example.airqual;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -9,6 +26,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.Task;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -20,30 +41,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import android.Manifest;
-import android.app.Activity;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.AsyncTask;
-import android.util.Log;
-
-
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements PollenItemAdapter.OnPollenItemClickListener, PollutantItemAdapter.OnPollutantItemClickListener {
 
@@ -98,9 +95,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         pollenListView = findViewById(R.id.pollen_types);
         pollutantListView = findViewById(R.id.air_pollutants);
-        //fetchAirQuality(apiKey, 28.06549440597758, 77.06549440597758, this);
 
-        //CardView cardView = findViewById(R.id.recommendation_card);
         Button airQualityRecsButton = findViewById(R.id.btn_pollutant_recommendation);
         airQualityRecsButton.setOnClickListener(view -> buildTotal());
 
@@ -148,8 +143,8 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
                 fetchPollen(getString(R.string.api_key), latitude, longitude, MainActivity.this);
                 fetchAirQuality(getString(R.string.api_key), latitude, longitude, MainActivity.this);
-                geocodeAddress(getString(R.string.api_key), latitude+","+longitude, MainActivity.this);
-                Log.d("latlong", latitude+", "+longitude);
+                geocodeAddress(getString(R.string.api_key), latitude + "," + longitude, MainActivity.this);
+                Log.d("latlong", latitude + ", " + longitude);
                 // Do something with the latitude and longitude
             }
 
@@ -319,8 +314,9 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            getLastLocation();
+        if (requestCode > 0 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            //getLastLocation();
+            startLocationUpdates();
         } else {
             Toast.makeText(this, "Location permission not allowed", Toast.LENGTH_SHORT).show();
         }
@@ -378,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
             }
 
             protected void onPostExecute(String result) {
-                Log.d("Hello fgrom tthe other isde", result+" tihi");
+                Log.d("Hello fgrom tthe other isde", result + " tihi");
                 if (result != null && !result.isEmpty()) {
                     // Create and set the adapter
                     activity.runOnUiThread(() -> {
@@ -472,7 +468,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
                     JSONArray indexesArray = json.getJSONArray("indexes");
 
-                    String dominantPollutant="";
+                    String dominantPollutant = "";
 
                     for (int i = 0; i < indexesArray.length(); i++) {
                         JSONObject indexObject = indexesArray.getJSONObject(i);
@@ -485,14 +481,11 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                         dominantPollutant = indexObject.getString("dominantPollutant");
 
 
-
                         AirQualityIndex airQualityIndex = new AirQualityIndex(indexCode, indexDisplayName, aqi, aqiDisplay, category, dominantPollutant);
                         activity.airQualityIndices.add(airQualityIndex);
                         Log.d("Airquallist", activity.airQualityIndices.toString());
 
                     }
-
-
 
 
                     JSONArray pollutantsArray = json.getJSONArray("pollutants");
