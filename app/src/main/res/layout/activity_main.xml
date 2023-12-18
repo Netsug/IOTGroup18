@@ -72,7 +72,7 @@
                     android:layout_weight="1"/>
 
                 <TextView
-                    android:id="@+id/uaqi_value"
+                    android:id="@+id/uaqi_total"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -113,6 +113,8 @@
                 android:layout_marginTop="20dp"/>
         </LinearLayout>
 
+
+
         <androidx.cardview.widget.CardView
             android:id="@+id/recommendation_card"
             android:layout_width="match_parent"
@@ -152,10 +154,12 @@
                     android:minWidth="48dp"
                     android:minHeight="48dp"
                     android:src="@drawable/ic_x_icon" />
-
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
+
+
+
     </FrameLayout>
 
     <LinearLayout
