@@ -3,17 +3,13 @@ package com.example.airqual;
 import java.util.HashMap;
 
 public class AirQualityIndex {
-
-    // Fields
-    private String indexCode;
-    private String indexDisplayName;
-    private String aqiDisplay;
-    private String category;
-    private String dominantPollutant;
-
+    private final String indexCode;
+    private final String indexDisplayName;
+    private final String aqiDisplay;
+    private final String category;
+    private final String dominantPollutant;
     private HashMap<String, String> healthRecommendations;
 
-    // Constructor
     public AirQualityIndex(String indexCode, String indexDisplayName,
                            String aqiDisplay, String category, String dominantPollutant) {
         this.indexCode = indexCode;
@@ -24,14 +20,11 @@ public class AirQualityIndex {
         this.healthRecommendations = null;
     }
 
-    public String getIndexCode() {
-        return indexCode;
-    }
+    public String getIndexCode() { return indexCode; }
 
     public String getIndexDisplayName() {
         return indexDisplayName;
     }
-
 
     public String getAqiDisplay() {
         return aqiDisplay;
@@ -52,6 +45,5 @@ public class AirQualityIndex {
     public void setHealthRecommendation(HashMap<String, String> hr) {
         this.healthRecommendations = hr;
     }
-
 }
 

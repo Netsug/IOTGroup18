@@ -13,8 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
-
-    private final OnPollutantItemClickListener mListener;
+    private final OnPollutantItemClickListener buttonInfoListener;
     private Pollutant pollutant;
     private final HashMap<String, String> unitConverterMap;
 
@@ -24,28 +23,25 @@ public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
 
     public PollutantItemAdapter(Context context, List<Pollutant> pollutants, OnPollutantItemClickListener listener) {
         super(context, 0, pollutants);
-        mListener = listener;
+        buttonInfoListener = listener;
         unitConverterMap = new HashMap<>();
     }
 
     @SuppressLint("SetTextI18n")
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        // Get the data item for this position
+    public View getView(final int position, View convertView, ViewGroup parent) {
         pollutant = getItem(position);
 
-        // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.air_pollutant_list_item, parent, false);
         }
 
         TextView tvName = convertView.findViewById(R.id.pollutant_name);
         TextView tvConcentrationUnitValue = convertView.findViewById(R.id.pollutant_value_unit);
-
         Button btnShowInfo = convertView.findViewById(R.id.btn_pollutant_info);
 
         tvName.setText(pollutant.getName());
-        ////////
+        ////////////////////////////////
 
         final char micro = '\u00B5';
         final char cubed = '\u00B3';
@@ -60,13 +56,13 @@ public class PollutantItemAdapter extends ArrayAdapter<Pollutant> {
             }
         }
 
-        ////////
+        ////////////////////////////////
         btnShowInfo.setOnClickListener(view -> {
-            if (mListener != null) {
+            if (buttonInfoListener != null) {
                 // Get the data item for this position
                 pollutant = getItem(position);
 
-                mListener.showPollutantCardView(pollutant);
+                buttonInfoListener.showPollutantCardView(pollutant);
             }
         });
 

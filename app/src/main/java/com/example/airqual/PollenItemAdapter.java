@@ -11,8 +11,7 @@ import android.widget.TextView;
 import java.util.List;
 
 public class PollenItemAdapter extends ArrayAdapter<Pollen> {
-
-    private final OnPollenItemClickListener mListener;
+    private final OnPollenItemClickListener buttonRecListener;
     private Pollen pollen;
 
     public interface OnPollenItemClickListener {
@@ -21,40 +20,31 @@ public class PollenItemAdapter extends ArrayAdapter<Pollen> {
 
     public PollenItemAdapter(Context context, List<Pollen> pollens, OnPollenItemClickListener listener) {
         super(context, 0, pollens);
-        mListener = listener;
+        buttonRecListener = listener;
     }
-
-    // PUT ONLY ITEMS IN THAT USER SELECTED, IF ITEM NOT IN RESPONSE, SAY ITS LOW POLLEN LEVEL
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        // Get the data item for this position
         pollen = getItem(position);
 
-        // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.pollen_list_item, parent, false);
         }
 
         TextView tvName = convertView.findViewById(R.id.pollen_name);
         TextView tvCategory = convertView.findViewById(R.id.index_category);
-
         Button btnShowHealthRecommendation = convertView.findViewById(R.id.btn_recommendation);
 
         tvName.setText(pollen.getDisplayName());
         tvCategory.setText(pollen.getIndexCategory());
 
         btnShowHealthRecommendation.setOnClickListener(view -> {
-            if (mListener != null) {
+            if (buttonRecListener != null) {
                 pollen = getItem(position);
-                mListener.showPollenCardView(pollen);
+                buttonRecListener.showPollenCardView(pollen);
             }
-
         });
 
-        // Return the completed view to render on screen
         return convertView;
     }
-
-
 }

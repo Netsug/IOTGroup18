@@ -3,7 +3,6 @@ package com.example.airqual;
 import android.util.Log;
 
 public class Pollen {
-
     private final String displayName;
     private final String indexValue;
     private String indexCategory;
@@ -21,6 +20,7 @@ public class Pollen {
         this.season = season;
         this.crossReaction = crossReaction;
         this.type = type;
+
         switch (indexValue) {
             case "1":
                 this.healthRecommendation = "Low risk for allergies.";
@@ -48,7 +48,6 @@ public class Pollen {
 
                 break;
         }
-
     }
 
     public String getDisplayName() {
@@ -59,10 +58,7 @@ public class Pollen {
         return indexValue;
     }
 
-    public String getIndexCategory() {
-        Log.d("Hello", "From me");
-        return indexCategory;
-    }
+    public String getIndexCategory() { return indexCategory; }
 
     public String getIndexDescription() {
         return indexDescription;

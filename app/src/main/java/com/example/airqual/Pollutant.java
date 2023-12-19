@@ -9,7 +9,6 @@ public class Pollutant {
     private String concentration;
     private String nonScientificName;
 
-    private String safeAmountCutoff;
     private final String recommendations;
 
     final char micro = '\u00B5';
@@ -17,32 +16,13 @@ public class Pollutant {
 
 
     public Pollutant(String name, double concentrationValue, String concentrationUnit, String rec) {
-
         HashMap<String, String> unitConverterMap = new HashMap<>();
         HashMap<String, String> nonScientificNameMap = new HashMap<>();
-        HashMap<String, String> safeAmountCutoffMap = new HashMap<>();
 
         this.name = name;
         this.concentrationValue = concentrationValue;
         this.concentrationUnit = concentrationUnit;
-
         this.recommendations = rec;
-
-        ////////////////////////////////
-
-        safeAmountCutoffMap.put("CO", "≈9000ppb");
-        safeAmountCutoffMap.put("NO2", "21.31ppb");
-        safeAmountCutoffMap.put("O3", "35.74ppb");
-        safeAmountCutoffMap.put("PM10","50" + micro + "g/m" + cubed);
-        safeAmountCutoffMap.put("PM2.5","12" + micro+ "g/m" + cubed);
-        safeAmountCutoffMap.put("SO2", "7.67ppb");
-
-        for (String key : safeAmountCutoffMap.keySet()) {
-            if (key.equals(name)) {
-                safeAmountCutoff = safeAmountCutoffMap.get(key);
-                break;
-            }
-        }
 
         ////////////////////////////////
 
@@ -71,7 +51,6 @@ public class Pollutant {
                 break;
             }
         }
-
         ////////////////////////////////
     }
 
@@ -94,11 +73,8 @@ public class Pollutant {
     public String getConcentration(){
         return concentration;
     }
+
     public String getNonScientificName(){
         return nonScientificName;
-    }
-
-    public String getSafeAmountCutoff() {
-        return safeAmountCutoff;
     }
 }
