@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -41,12 +42,25 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements PollenItemAdapter.OnPollenItemClickListener, PollutantItemAdapter.OnPollutantItemClickListener {
 
-    private final String KISTA_ADDRESS = "Borgarfjordsgatan 12, 164 55 Kista";
-    private final String KISTA_LOCATION = "59.40704825544182,17.94577779678242";
-    private final double KISTA_LATITUDE = 59.40704825544182;
-    private final double KISTA_LONGITUDE = 17.94577779678242;
     private static final int MIN_TIME = 1000; // Minimum time interval between location updates in milliseconds
-    private static final int MIN_DISTANCE = 10; // Minimum distance between location updates in meters
+    private static final int MIN_DISTANCE = 30; // Minimum distance between location updates in meters
+    private static String[] pollenTypes = {
+            "Hazel",
+            "Ash",
+            "Cottonwood",
+            "Oak",
+            "Pine",
+            "Birch",
+            "Olive",
+            "Grasses",
+            "Ragweed",
+            "Alder",
+            "Mugwort",
+            "Elm",
+            "Maple",
+            "Juniper",
+            "Cypress pine"
+    };
 
     private DrawerLayout drawerLayout;
     private LinearLayout allergenSelectionDrawer;
@@ -57,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     private ArrayList<Pollen> pollens;
 
     private final HashMap<String, Boolean> checkBoxStates = new HashMap<>();
-    private String jsonString;
+    private String pollenAPIResponse;
     private ArrayList<AirQualityIndex> airQualityIndices;
 
     private double latitude;
@@ -68,15 +82,17 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tvLocation = findViewById(R.id.location_text);
 
         checkLocationPermissions();
 
+        makeUI();
+    }
+
+    private void makeUI() {
         drawerLayout = findViewById(R.id.drawer_layout);
         allergenSelectionDrawer = findViewById(R.id.allergen_drawer);
         LinearLayout allergenList = findViewById(R.id.allergen_list);
-
-        addAllergiesToDrawer(getPollen(), allergenList);
+        addAllergiesToDrawer(pollenTypes, allergenList);
 
         ImageButton buttonOpenDrawer = findViewById(R.id.btn_hamburger);
         buttonOpenDrawer.setOnClickListener(view -> drawerLayout.openDrawer(allergenSelectionDrawer));
@@ -89,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         pollenListView = findViewById(R.id.pollen_types);
         pollutantListView = findViewById(R.id.air_pollutants);
-
         Button airQualityRecsButton = findViewById(R.id.btn_pollutant_recommendation);
         airQualityRecsButton.setOnClickListener(view -> buildTotal());
     }
@@ -98,15 +113,11 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         int totalLength = 15;
         int decimalPlaces = totalLength - String.valueOf((int) input).length() - 1;
 
-        // Create the format string
         String formatString = "%1$" + totalLength + "." + decimalPlaces + "f";
 
-        // Format the double value
         String formattedValue = String.format(formatString, input);
 
-        // Convert the formatted string back to a double
-        double result = Double.parseDouble(formattedValue);
-        return result;
+        return Double.parseDouble(formattedValue);
     }
 
     private void checkLocationPermissions() {
@@ -126,19 +137,17 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         LocationListener locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                // Handle new location updates here
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
 
                 //XDDDD
                 latitude = addDecimals(latitude);
                 longitude = addDecimals(longitude);
-
+                tvLocation = findViewById(R.id.location_text);
                 fetchPollen(getString(R.string.api_key), latitude, longitude, MainActivity.this);
                 fetchAirQuality(getString(R.string.api_key), latitude, longitude, MainActivity.this);
                 geocodeAddress(getString(R.string.api_key), latitude + "," + longitude, MainActivity.this);
-                Log.d("latlong", latitude + ", " + longitude);
-                // Do something with the latitude and longitude
+
             }
 
             @Override
@@ -158,7 +167,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         };
 
 
-        // Check if location services are enabled
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             // Use the GPS provider for location updates
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -183,8 +191,8 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
     private void buildTotal() {
         TextView tvUaqiTotal = findViewById(R.id.uaqi_total);
-        AirQualityIndex aqi = airQualityIndices.get(0);
-        String strTitle = aqi.getIndexDisplayName() + ": " + aqi.getAqiDisplay();
+        AirQualityIndex aqiObject = airQualityIndices.get(0);
+        String strTitle = aqiObject.getIndexDisplayName() + ": " + aqiObject.getAqiDisplay();
         tvUaqiTotal.setText(strTitle);
 
         CardView cardView = findViewById(R.id.recommendation_card);
@@ -192,14 +200,14 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         HashMap<String, String> healthMap = airQualityIndices.get(0).getHealthRecommendation();
 
-        String strInfo = aqi.getIndexDisplayName() + ": " + aqi.getAqiDisplay() + "/100" + "\n\n" +
-                "Quality: " + aqi.getCategory() + "\n\n" +
-                "Dominant Pollutant: " + aqi.getDominantPollutant() + "\n\n" +
+        String strInfo = aqiObject.getIndexDisplayName() + ": " + aqiObject.getAqiDisplay() + "/100" + "\n\n" +
+                "Quality: " + aqiObject.getCategory() + "\n\n" +
+                "Dominant Pollutant: " + aqiObject.getDominantPollutant() + "\n\n" +
                 //aqi.getHealthRecommendation() + "\n\n" +
                 "General Population: " + healthMap.get("General Population") + "\n\n" +
                 "Elderly: " + healthMap.get("Elderly");
 
-        //Maybe add more recommendations
+        // Maybe add more recommendations
 
         TextView tvCardTitle = findViewById(R.id.card_title);
         tvCardTitle.setText("Summary of Air Quality");
@@ -237,27 +245,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
             layout.addView(checkBox);
         }
-    }
-
-    // TODO: Make to just a string array
-    private static String[] getPollen() {
-        return new String[]{
-                "Hazel",
-                "Ash",
-                "Cottonwood",
-                "Oak",
-                "Pine",
-                "Birch",
-                "Olive",
-                "Grasses",
-                "Ragweed",
-                "Alder",
-                "Mugwort",
-                "Elm",
-                "Maple",
-                "Juniper",
-                "Cypress pine"
-        };
     }
 
     private void checkStates() {
@@ -303,6 +290,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
                     // Create a URL object
                     URL url = new URL(urlString);
+                    Log.d("url", urlString);
 
                     // Open a connection to the URL
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -331,9 +319,8 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                         String jsonString = response.toString();
                         Log.d("jsonString", jsonString);
 
-                        ArrayList<String> parsedCity = activity.parseCityGeolocation(response.toString());
-
-                        String city = parsedCity.get(1);
+                        ArrayList<String> geolocationArray = activity.parseCityGeolocation(response.toString());
+                        String city = geolocationArray.get(3) + ", " + geolocationArray.get(4);
 
                         return city;
                     } else {
@@ -447,13 +434,17 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
                         String indexCode = indexObject.getString("code");
                         String indexDisplayName = indexObject.getString("displayName");
-                        int aqi = indexObject.getInt("aqi");
-                        String aqiDisplay = indexObject.getString("aqiDisplay");
-                        String category = indexObject.getString("category");
-                        dominantPollutant = indexObject.getString("dominantPollutant");
+                        String aqiDisplay = "";
+                        String category = "";
+                        try {
+                            aqiDisplay = indexObject.getString("aqiDisplay");
+                            category = indexObject.getString("category");
+                            dominantPollutant = indexObject.getString("dominantPollutant");
+                        } catch (JSONException e) {
+                            Log.d("JsonException", e.toString());
+                        }
 
-
-                        AirQualityIndex airQualityIndex = new AirQualityIndex(indexCode, indexDisplayName, aqi, aqiDisplay, category, dominantPollutant);
+                        AirQualityIndex airQualityIndex = new AirQualityIndex(indexCode, indexDisplayName, aqiDisplay, category, dominantPollutant);
                         activity.airQualityIndices.add(airQualityIndex);
                         Log.d("Airquallist", activity.airQualityIndices.toString());
 
@@ -478,7 +469,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
                         Pollutant pollutant = new Pollutant(pollutantDisplayName, concentrationValue, concentrationUnits, healthRecommendationsObject.getString("generalPopulation"));
                         pollutants.add(pollutant);
-                        //activity.airQualityIndices.get(0).addHealthRecommendations(healthRecommendationsObject.getString(("generalPopulation")));
                     }
 
                     JSONObject healthRecommendationsObject = json.getJSONObject("healthRecommendations");
@@ -493,23 +483,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
                     activity.airQualityIndices.get(0).setHealthRecommendation(healthMap);
 
-
-                    /*
-                    for (int i = 0; i < pollutantsArray.length(); i++) {
-                        JSONObject pollutantObject = pollutantsArray.getJSONObject(i);
-
-                        if (dominantPollutant.equals(pollutantObject.getString("code"))) {
-                            activity.airQualityIndices.get(0).setHealthRecommendation(pollutantObject.getString("healthRecommendations"));
-
-                            break;
-                        }
-                        Log.d("dominantPollutant: ", dominantPollutant);
-                        Log.d("pollobjectcode: ", pollutantObject.getString("code"));
-                        Log.d("pollobjecthr: ", pollutantObject.getString("healthRecommendations"));
-
-
-                    }*/
-
                     // TODO: Add logging for other health recommendations.
                     return pollutants;
 
@@ -523,6 +496,11 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                 if (result != null && !result.isEmpty()) {
                     // Create and set the adapter
                     activity.runOnUiThread(() -> {
+                        TextView tvUaqiTotal = activity.findViewById(R.id.uaqi_total);
+                        AirQualityIndex aqiObject = activity.airQualityIndices.get(0);
+                        String strTitle = aqiObject.getIndexDisplayName() + ": " + aqiObject.getAqiDisplay();
+                        tvUaqiTotal.setText(strTitle);
+
                         PollutantItemAdapter adapter = new PollutantItemAdapter(activity, result, activity);
                         activity.pollutantListView.setAdapter(adapter);
                         //activity.buildTotal();
@@ -567,16 +545,19 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                     // Check if the request was successful (status code 200)
                     if (responseCode == 200) {
 
-                        activity.jsonString = response.toString();
+                        activity.pollenAPIResponse = response.toString();
 
                         return activity.parseAllPollen();
 
                     } else {
                         Log.d("Not successful, bad response code", "Pollen request failed with response code: " + responseCode);
                     }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
                 return null;
             }
 
@@ -598,38 +579,68 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         ArrayList<String> str = new ArrayList<>();
 
-        JSONObject responseObject = new JSONObject(jsonResponse);
+        try {
 
-        // Access the 'results' JSON array
-        JSONArray resultsArray = responseObject.getJSONArray("results");
+            JSONObject jsonObj = new JSONObject(jsonResponse);
 
-        // Loop through each result
-        for (int i = 0; i < resultsArray.length(); i++) {
-            JSONObject result = resultsArray.getJSONObject(i);
+            // Extracting and processing plus_code if needed
+            JSONObject plusCode = jsonObj.getJSONObject("plus_code");
+            String compoundCode = plusCode.getString("compound_code");
+            String globalCode = plusCode.getString("global_code");
 
-            // Extract 'address_components' JSON array
-            JSONArray addressComponents = result.getJSONArray("address_components");
+            Log.d("jsonOB", jsonObj.toString());
+            Log.d("plus", plusCode.toString());
+            Log.d("arr", jsonObj.getJSONArray("results").toString());
 
-            // Check each address component for 'Warraq Al Arab'
-            for (int j = 0; j < addressComponents.length(); j++) {
-                JSONObject addressComponent = addressComponents.getJSONObject(j);
-                String longName = addressComponent.getString("long_name");
+            JSONArray results = jsonObj.getJSONArray("results");
 
-                str.add(longName);
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject result = results.getJSONObject(i);
+                JSONArray addressComponents = result.getJSONArray("address_components");
+
+                // Iterate through each address component
+                for (int j = 0; j < addressComponents.length(); j++) {
+                    JSONObject addressComponent = addressComponents.getJSONObject(j);
+                    String longName = addressComponent.getString("long_name");
+                    str.add(longName);
+                    String shortName = addressComponent.getString("short_name");
+                    JSONArray types = addressComponent.getJSONArray("types");
+
+                    /*
+                    for (int k = 0; k < types.length(); k++) {
+                        String type = types.getString(k);
+                        if (type.equals("postal_town") || type.equals("political")) {
+                            str.add(longName);
+                        }
+                    }
+
+                     */
+                }
+
+                String formattedAddress = result.getString("formatted_address");
+                JSONObject geometry = result.getJSONObject("geometry");
+                JSONObject location = geometry.getJSONObject("location");
+                double lat = location.getDouble("lat");
+                double lng = location.getDouble("lng");
+
+                //str.add(formattedAddress);
+
+                // Process the latitude and longitude
+                System.out.println("Formatted Address: " + formattedAddress + ", Latitude: " + lat + ", Longitude: " + lng);
             }
-
+        } catch (JSONException e) {
+            e.printStackTrace();
+            // Handle the exception
         }
-
-
         return str;
     }
 
     private ArrayList<Pollen> parseAllPollen() {
-        ArrayList<Pollen> pollenResponse = parsePollen(jsonString);
-        final String[] pollenStringArray = getPollen();
+        ArrayList<Pollen> pollenResponse = parsePollen(pollenAPIResponse);
+        final String[] pollenStringArray = pollenTypes;
         ArrayList<Pollen> newPollenList = new ArrayList<>();
 
-        for (int i = 0; i < getPollen().length; i++) {
+        for (int i = 0; i < pollenTypes.length; i++) {
 
             Pollen newPollen = null;
             boolean found = false;
@@ -756,7 +767,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
 
         tvRecommendations.setText(str);
 
-
         cardView.setVisibility(View.VISIBLE);
 
         ImageButton buttonDismiss = findViewById(R.id.btn_dismiss_card);
@@ -771,6 +781,8 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         tvTitle.setText(pollutant.getName());
 
         TextView tvInformation = findViewById(R.id.information_text);
+
+        // Another format for the card
         /*final String str = pollutant.getNonScientificName() + " - " + pollutant.getConcentration() +
                 "\n\n" + "The Safe Cutoff for " + pollutant.getNonScientificName() + " is " +
                 pollutant.getSafeAmountCutoff() + "\n\n" + pollutant.getRecommendations();
@@ -783,11 +795,9 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         cardView.setVisibility(View.VISIBLE);
 
         ImageButton buttonDismiss = findViewById(R.id.btn_dismiss_card);
-
-        buttonDismiss.setOnClickListener(view -> {
-            // Set the CardView's visibility to GONE or INVISIBLE
-            cardView.setVisibility(View.GONE); // or View.INVISIBLE
-        });
+        buttonDismiss.setOnClickListener(view -> cardView.setVisibility(View.GONE));
     }
+
+    // TODO: maybe one showcardview method with good parameters
 
 }

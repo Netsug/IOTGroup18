@@ -7,7 +7,6 @@ public class AirQualityIndex {
     // Fields
     private String indexCode;
     private String indexDisplayName;
-    private int aqi;
     private String aqiDisplay;
     private String category;
     private String dominantPollutant;
@@ -15,11 +14,10 @@ public class AirQualityIndex {
     private HashMap<String, String> healthRecommendations;
 
     // Constructor
-    public AirQualityIndex(String indexCode, String indexDisplayName, int aqi,
+    public AirQualityIndex(String indexCode, String indexDisplayName,
                            String aqiDisplay, String category, String dominantPollutant) {
         this.indexCode = indexCode;
         this.indexDisplayName = indexDisplayName;
-        this.aqi = aqi;
         this.aqiDisplay = aqiDisplay;
         this.category = category;
         this.dominantPollutant = dominantPollutant;
@@ -34,9 +32,6 @@ public class AirQualityIndex {
         return indexDisplayName;
     }
 
-    public int getAqi() {
-        return aqi;
-    }
 
     public String getAqiDisplay() {
         return aqiDisplay;
