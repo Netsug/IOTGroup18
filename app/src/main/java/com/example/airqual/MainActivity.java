@@ -24,9 +24,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.tasks.Task;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -291,7 +288,6 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode > 0 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            //getLastLocation();
             startLocationUpdates();
         } else {
             Toast.makeText(this, "Location permission not allowed", Toast.LENGTH_SHORT).show();
