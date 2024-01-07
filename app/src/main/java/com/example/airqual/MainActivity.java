@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
         LocationListener locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+                String apiKey = getString(R.string.api_key);
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
 
@@ -143,9 +144,9 @@ public class MainActivity extends AppCompatActivity implements PollenItemAdapter
                 longitude = addDecimals(longitude);
                 tvLocation = findViewById(R.id.location_text);
 
-                fetchPollen(getString(R.string.api_key), latitude, longitude, MainActivity.this);
-                fetchAirQuality(getString(R.string.api_key), latitude, longitude, MainActivity.this);
-                geocodeAddress(getString(R.string.api_key), latitude + "," + longitude, MainActivity.this);
+                fetchPollen(apiKey, latitude, longitude, MainActivity.this);
+                fetchAirQuality(apiKey, latitude, longitude, MainActivity.this);
+                geocodeAddress(apiKey, latitude + "," + longitude, MainActivity.this);
             }
 
             @Override
